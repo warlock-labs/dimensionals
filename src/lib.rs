@@ -12,6 +12,8 @@ pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
 
 enum LinearArrayLayout {
     RowMajor,
+    // TODO figure out if we want to support this layout
+    #[allow(dead_code)]
     ColumnMajor,
 }
 
@@ -295,7 +297,7 @@ macro_rules! matrix {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Add;
+    
     use super::*;
     use crate::{matrix, scalar, vector};
 
