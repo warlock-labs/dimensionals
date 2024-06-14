@@ -1,4 +1,12 @@
 [package]
+authors = ["0xAlcibiades <alcibiades.eth@protonmail.com>"]
+categories = ["mathematics"]
+description = "Rust native generic, flexible n-dimensional array."
+homepage = "https://github.com/warlock-labs/dimensionals"
+keywords = ["math", "matrix", "vector", "tensor", "array"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/warlock-labs/dimensionals"
 name = "dimensionals"
 version = "0.1.0"
 edition = "2021"
