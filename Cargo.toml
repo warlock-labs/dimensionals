@@ -1,0 +1,18 @@
+[package]
+name = "dimensionals"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+num = "0.4.3"
+
+[lib]
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "benchmarks"
+harness = false
