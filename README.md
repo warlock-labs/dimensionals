@@ -1,7 +1,7 @@
 [![License](https://img.shields.io/crates/l/dimensionals)](https://choosealicense.com/licenses/mit/)
 [![Crates.io](https://img.shields.io/crates/v/dimensionals)](https://crates.io/crates/dimensionals)
 [![Docs](https://img.shields.io/crates/v/dimensionals?color=blue&label=docs)](https://docs.rs/dimensionals/)
-![CI](https://github.com/warlock-labs/dimensionals/actions/workflows/CI.yml/badge.svg)
+[![CI]](https://github.com/warlock-labs/dimensionals/actions/workflows/CI.yml/badge.svg)
 
 # dimensionals
 
@@ -85,4 +85,3 @@ This project is inspired by and builds upon ideas from several existing multidim
 Warlock Labs - [https://github.com/warlock-labs](https://github.com/warlock-labs)
 
 Project Link: [https://github.com/warlock-labs/dimensionals](https://github.com/warlock-labs/dimensionals)
-```
