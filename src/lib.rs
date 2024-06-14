@@ -1,22 +1,97 @@
+//! The Dimensionals library provides a multidimensional array implementation 
+//! with a generic storage backend over a generic number type.
+//!
+//! The main types are:
+//!
+//! - [`DimensionalStorage`]: A trait defining methods for storage backends.
+//! - [`LinearArrayStorage`]: A specific storage backend using a linear memory layout.
+//! - [`Dimensional`]: The main multidimensional array type, generic over the storage backend.
+//!
+//! The library also provides some convenience macros for creating arrays:
+//!
+//! - [`scalar!`]: Creates a 0-dimensional array (a single value).
+//! - [`vector!`]: Creates a 1-dimensional array.
+//! - [`matrix!`]: Creates a 2-dimensional array.
+//!
+//! # Example
+//!
+//! ```
+//! use dimensionals::{matrix, Dimensional, LinearArrayStorage};
+//!
+//! let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![
+//!     [1, 2, 3],
+//!     [4, 5, 6]
+//! ];
+//! assert_eq!(m[[0, 0]], 1);
+//! assert_eq!(m[[1, 1]], 5);
+//! ```
+//!
+//! # Performance
+//!
+//! The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` 
+//! and computes element indices on the fly. This provides good cache locality
+//! for traversals, but may not be optimal for sparse or very high dimensional arrays.
+//!  
+//! Alternative storage backends can be implemented by defining a type that
+//! implements the `DimensionalStorage` trait.
+
 use num::Num;
 use std::marker::PhantomData;
 use std::ops::{Add, Index, IndexMut};
 
+/// A trait for storage backends for multidimensional arrays.
+///
+/// This trait defines methods for creating arrays filled with zeros or ones,
+/// and for creating an array from a vector of data.
+///
+/// # Type Parameters
+///
+/// * `T`: The element type of the array. Must implement `Num` and `Copy`.
+/// * `N`: The number of dimensions of the array.
 pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
-    Index<[usize; N], Output = T> + IndexMut<[usize; N], Output = T>
+Index<[usize; N], Output = T> + IndexMut<[usize; N], Output = T>
 {
+    /// Creates an array filled with zeros.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
     fn zeros(shape: [usize; N]) -> Self;
+
+    /// Creates an array filled with ones.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
     fn ones(shape: [usize; N]) -> Self;
+
+    /// Creates an array from a vector of data.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    /// * `data`: The data to initialize the array with.
     fn from_vec(shape: [usize; N], data: Vec<T>) -> Self;
 }
 
+/// An enum representing the memory layout of a linear array.
 enum LinearArrayLayout {
+    /// Row-major layout (default).
     RowMajor,
-    // TODO figure out if we want to support this layout
+    // TODO: figure out if we want to support column-major layout
     #[allow(dead_code)]
     ColumnMajor,
 }
 
+/// A linear array storage backend for multidimensional arrays.
+///
+/// This struct stores the array data in a contiguous block of memory,
+/// using either row-major or column-major layout.
+///
+/// # Type Parameters
+///
+/// * `T`: The element type of the array. Must implement `Num` and `Copy`.
+/// * `N`: The number of dimensions of the array.
 pub struct LinearArrayStorage<T: Num + Copy, const N: usize> {
     data: Vec<T>,
     layout: LinearArrayLayout,
@@ -56,6 +131,13 @@ impl<T: Num + Copy, const N: usize> DimensionalStorage<T, N> for LinearArrayStor
 }
 
 impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
+    /// Computes the strides for a given shape and layout.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    /// * `stride`: The base stride (usually 1).
+    /// * `layout`: The memory layout of the array.
     fn compute_strides(
         shape: &[usize; N],
         stride: &usize,
@@ -79,6 +161,11 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
         strides
     }
 
+    /// Computes the linear index for a given multidimensional index.
+    ///
+    /// # Arguments
+    ///
+    /// * `index`: The multidimensional index.
     fn layout_index(&self, index: [usize; N]) -> usize {
         match self.layout {
             LinearArrayLayout::RowMajor => index
@@ -95,6 +182,14 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
         }
     }
 
+    /// Creates a new `LinearArrayStorage` with the given parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    /// * `data`: The data to initialize the array with.
+    /// * `layout`: The memory layout of the array.
+    /// * `stride`: The base stride (usually 1).
     fn new(shape: [usize; N], data: Vec<T>, layout: LinearArrayLayout, stride: usize) -> Self {
         let strides = Self::compute_strides(&shape, &stride, &layout);
         Self {
@@ -105,6 +200,15 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
     }
 }
 
+/// A multidimensional array type.
+///
+/// This struct represents a multidimensional array with a generic storage backend.
+///
+/// # Type Parameters
+///
+/// * `T`: The element type of the array. Must implement `Num` and `Copy`.
+/// * `S`: The storage backend for the array. Must implement `DimensionalStorage`.
+/// * `N`: The number of dimensions of the array.
 pub struct Dimensional<T: Num + Copy, S, const N: usize>
 where
     S: DimensionalStorage<T, N>,
@@ -118,6 +222,11 @@ impl<T: Num + Copy, S, const N: usize> Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Creates a new array filled with zeros.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
     pub fn zeros(shape: [usize; N]) -> Self
     where
         S: DimensionalStorage<T, N>,
@@ -130,6 +239,11 @@ where
         }
     }
 
+    /// Creates a new array filled with ones.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
     pub fn ones(shape: [usize; N]) -> Self
     where
         S: DimensionalStorage<T, N>,
@@ -156,6 +270,12 @@ where
         }
     }
 
+    /// Creates a new array using a function to initialize each element.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    /// * `f`: A function that takes an index and returns the value for that index.
     pub fn from_fn<F>(shape: [usize; N], f: F) -> Self
     where
         F: Fn([usize; N]) -> T,
@@ -176,6 +296,12 @@ where
         }
     }
 
+    /// Converts a linear index to a multidimensional index.
+    ///
+    /// # Arguments
+    ///
+    /// * `index`: The linear index.
+    /// * `shape`: The shape of the array.
     fn unravel_index(index: usize, shape: &[usize; N]) -> [usize; N] {
         let mut index = index;
         let mut unraveled = [0; N];
@@ -188,22 +314,31 @@ where
         unraveled
     }
 
+    /// Returns the shape of the array.
     pub fn shape(&self) -> [usize; N] {
         self.shape
     }
 
+    /// Returns the number of dimensions of the array.
     pub fn ndim(&self) -> usize {
         N
     }
 
+    /// Returns the total number of elements in the array.
     pub fn len(&self) -> usize {
         self.shape.iter().product()
     }
 
+    /// Returns `true` if the array is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Returns the length of the array along a given axis.
+    ///
+    /// # Arguments
+    ///
+    /// * `axis`: The axis to get the length of.
     pub fn len_axis(&self, axis: usize) -> usize {
         self.shape[axis]
     }
@@ -247,7 +382,7 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add for Dimensional<T, S, 1> {
 impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add for Dimensional<T, S, 2> {
     type Output = Dimensional<T, S, 2>;
 
-    // Vector addition
+    // Vector addition 
     fn add(self, rhs: Self) -> Self::Output {
         let shape = self.shape;
         let mut result = Dimensional::zeros(shape);
