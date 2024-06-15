@@ -439,11 +439,16 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Div<T> for &Dimensional<T, S, 1
 }
 
 // Vector-vector operations
-impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add<&Dimensional<T, S, 1>> for &Dimensional<T, S, 1> {
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add<&Dimensional<T, S, 1>>
+    for &Dimensional<T, S, 1>
+{
     type Output = Dimensional<T, S, 1>;
 
     fn add(self, rhs: &Dimensional<T, S, 1>) -> Self::Output {
-        assert_eq!(self.shape, rhs.shape, "Cannot add vectors of different lengths");
+        assert_eq!(
+            self.shape, rhs.shape,
+            "Cannot add vectors of different lengths"
+        );
         let mut result = Dimensional::zeros(self.shape);
         for i in 0..self.shape[0] {
             result[[i]] = self[[i]] + rhs[[i]];
@@ -452,11 +457,16 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add<&Dimensional<T, S, 1>> for 
     }
 }
 
-impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Sub<&Dimensional<T, S, 1>> for &Dimensional<T, S, 1> {
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Sub<&Dimensional<T, S, 1>>
+    for &Dimensional<T, S, 1>
+{
     type Output = Dimensional<T, S, 1>;
 
     fn sub(self, rhs: &Dimensional<T, S, 1>) -> Self::Output {
-        assert_eq!(self.shape, rhs.shape, "Cannot subtract vectors of different lengths");
+        assert_eq!(
+            self.shape, rhs.shape,
+            "Cannot subtract vectors of different lengths"
+        );
         let mut result = Dimensional::zeros(self.shape);
         for i in 0..self.shape[0] {
             result[[i]] = self[[i]] - rhs[[i]];
@@ -467,7 +477,9 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Sub<&Dimensional<T, S, 1>> for 
 
 // Matrix Math
 
-impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add<&Dimensional<T, S, 2>> for &Dimensional<T, S, 2> {
+impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add<&Dimensional<T, S, 2>>
+    for &Dimensional<T, S, 2>
+{
     type Output = Dimensional<T, S, 2>;
 
     // Vector addition
@@ -700,7 +712,7 @@ mod tests {
         let a = vector![1, 2, 3];
         let b = 2;
 
-        let c = &a + b; 
+        let c = &a + b;
         assert_eq!(c, vector![3, 4, 5]);
         let c = &a - b;
         assert_eq!(c, vector![-1, 0, 1]);
