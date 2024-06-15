@@ -37,7 +37,7 @@
 
 use num::Num;
 use std::marker::PhantomData;
-use std::ops::{Add, Index, IndexMut};
+use std::ops::{Add, Div, Index, IndexMut, Mul, Sub};
 
 /// A trait for storage backends for multidimensional arrays.
 ///
@@ -75,6 +75,7 @@ pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
 }
 
 /// An enum representing the memory layout of a linear array.
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum LinearArrayLayout {
     /// Row-major layout (default).
     RowMajor,
@@ -92,6 +93,7 @@ enum LinearArrayLayout {
 ///
 /// * `T`: The element type of the array. Must implement `Num` and `Copy`.
 /// * `N`: The number of dimensions of the array.
+#[derive(Debug, Clone, PartialEq)]
 pub struct LinearArrayStorage<T: Num + Copy, const N: usize> {
     data: Vec<T>,
     layout: LinearArrayLayout,
@@ -209,6 +211,7 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
 /// * `T`: The element type of the array. Must implement `Num` and `Copy`.
 /// * `S`: The storage backend for the array. Must implement `DimensionalStorage`.
 /// * `N`: The number of dimensions of the array.
+#[derive(Debug, Copy, Clone)]
 pub struct Dimensional<T: Num + Copy, S, const N: usize>
 where
     S: DimensionalStorage<T, N>,
@@ -364,26 +367,111 @@ where
     }
 }
 
-impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add for Dimensional<T, S, 1> {
-    type Output = Dimensional<T, S, 1>;
+// Generalized operations
 
-    fn add(self, rhs: Self) -> Self::Output {
-        let shape = self.shape;
-        let mut result = Dimensional::zeros(shape);
-
-        for i in 0..shape[0] {
-            result[[i]] = self[[i]] + rhs[[i]];
+impl<T: Num + Copy + PartialEq, S, const N: usize> PartialEq for Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        if self.shape != other.shape {
+            return false;
         }
 
+        for i in 0..self.shape.iter().product::<usize>() {
+            let index = Self::unravel_index(i, &self.shape);
+            if self[index] != other[index] {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
+// Scalar-vector operations
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add<T> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn add(self, rhs: T) -> Self::Output {
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] + rhs;
+        }
         result
     }
 }
 
-impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add for Dimensional<T, S, 2> {
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Sub<T> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn sub(self, rhs: T) -> Self::Output {
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] - rhs;
+        }
+        result
+    }
+}
+
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Mul<T> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] * rhs;
+        }
+        result
+    }
+}
+
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Div<T> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] / rhs;
+        }
+        result
+    }
+}
+
+// Vector-vector operations
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add<&Dimensional<T, S, 1>> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn add(self, rhs: &Dimensional<T, S, 1>) -> Self::Output {
+        assert_eq!(self.shape, rhs.shape, "Cannot add vectors of different lengths");
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] + rhs[[i]];
+        }
+        result
+    }
+}
+
+impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Sub<&Dimensional<T, S, 1>> for &Dimensional<T, S, 1> {
+    type Output = Dimensional<T, S, 1>;
+
+    fn sub(self, rhs: &Dimensional<T, S, 1>) -> Self::Output {
+        assert_eq!(self.shape, rhs.shape, "Cannot subtract vectors of different lengths");
+        let mut result = Dimensional::zeros(self.shape);
+        for i in 0..self.shape[0] {
+            result[[i]] = self[[i]] - rhs[[i]];
+        }
+        result
+    }
+}
+
+// Matrix Math
+
+impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add<&Dimensional<T, S, 2>> for &Dimensional<T, S, 2> {
     type Output = Dimensional<T, S, 2>;
 
     // Vector addition
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, rhs: &Dimensional<T, S, 2>) -> Self::Output {
         let shape = self.shape;
         let mut result = Dimensional::zeros(shape);
 
@@ -396,6 +484,8 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add for Dimensional<T, S, 2> {
         result
     }
 }
+
+// Macros
 
 #[macro_export]
 macro_rules! scalar {
@@ -577,7 +667,7 @@ mod tests {
     fn test_addition() {
         let v1 = vector![1, 2, 3, 4, 5];
         let v2 = vector![6, 7, 8, 9, 10];
-        let v3 = v1 + v2;
+        let v3 = &v1 + &v2;
         assert_eq!(v3[[0]], 7);
         assert_eq!(v3[[2]], 11);
         assert_eq!(v3[[4]], 15);
@@ -596,12 +686,53 @@ mod tests {
             shape,
             LinearArrayStorage::new(shape, data2, LinearArrayLayout::ColumnMajor, 1),
         );
-        let array3 = array1 + array2;
+        let array3 = &array1 + &array2;
         assert_eq!(array3[[0, 0]], 8.0);
         assert_eq!(array3[[1, 0]], 14.0);
         assert_eq!(array3[[0, 1]], 10.0);
         assert_eq!(array3[[1, 1]], 16.0);
         assert_eq!(array3[[0, 2]], 12.0);
         assert_eq!(array3[[1, 2]], 18.0);
+    }
+
+    #[test]
+    fn test_scalar_vector_ops() {
+        let a = vector![1, 2, 3];
+        let b = 2;
+
+        let c = &a + b; 
+        assert_eq!(c, vector![3, 4, 5]);
+        let c = &a - b;
+        assert_eq!(c, vector![-1, 0, 1]);
+        let c = &a * b;
+        assert_eq!(c, vector![2, 4, 6]);
+        let c = &a / b;
+        assert_eq!(c, vector![0, 1, 1]);
+    }
+
+    #[test]
+    fn test_vector_vector_ops() {
+        let a = vector![1, 2, 3];
+        let b = vector![4, 5, 6];
+
+        assert_eq!(&a + &b, vector![5, 7, 9]);
+        let c = &a - &b;
+        assert_eq!(c, vector![-3, -3, -3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_vector_vector_ops_different_lengths_add() {
+        let a = vector![1, 2, 3];
+        let b = vector![4, 5];
+        let _ = &a + &b;
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_vector_vector_ops_different_lengths_sub() {
+        let a = vector![1, 2, 3];
+        let b = vector![4, 5];
+        let _ = &a - &b;
     }
 }
