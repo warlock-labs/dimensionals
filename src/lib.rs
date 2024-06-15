@@ -1,4 +1,4 @@
-//! The Dimensionals library provides a multidimensional array implementation 
+//! The Dimensionals library provides a multidimensional array implementation
 //! with a generic storage backend over a generic number type.
 //!
 //! The main types are:
@@ -28,7 +28,7 @@
 //!
 //! # Performance
 //!
-//! The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` 
+//! The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>`
 //! and computes element indices on the fly. This provides good cache locality
 //! for traversals, but may not be optimal for sparse or very high dimensional arrays.
 //!  
@@ -49,7 +49,7 @@ use std::ops::{Add, Index, IndexMut};
 /// * `T`: The element type of the array. Must implement `Num` and `Copy`.
 /// * `N`: The number of dimensions of the array.
 pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
-Index<[usize; N], Output = T> + IndexMut<[usize; N], Output = T>
+    Index<[usize; N], Output = T> + IndexMut<[usize; N], Output = T>
 {
     /// Creates an array filled with zeros.
     ///
@@ -382,7 +382,7 @@ impl<T: Num + Copy, S: DimensionalStorage<T, 1>> Add for Dimensional<T, S, 1> {
 impl<T: Num + Copy, S: DimensionalStorage<T, 2>> Add for Dimensional<T, S, 2> {
     type Output = Dimensional<T, S, 2>;
 
-    // Vector addition 
+    // Vector addition
     fn add(self, rhs: Self) -> Self::Output {
         let shape = self.shape;
         let mut result = Dimensional::zeros(shape);
@@ -432,7 +432,7 @@ macro_rules! matrix {
 
 #[cfg(test)]
 mod tests {
-    
+
     use super::*;
     use crate::{matrix, scalar, vector};
 
