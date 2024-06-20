@@ -1,5 +1,5 @@
 //! This module provides iterator implementations for the Dimensional struct.
-//! It includes both immutable and mutable iterators, allowing for efficient
+//! It includes both immutable and mutable iterators, allowing for the efficient
 //! traversal and modification of Dimensional arrays.
 
 use crate::{Dimensional, DimensionalStorage};
@@ -101,6 +101,8 @@ where
 
         // SAFETY: We know that `dimensional` is valid for the lifetime of the iterator,
         // and we're the only mutable reference to it.
+        // Do we really though? What if it gets deleted in an interation, what if another
+        // reference is opened to it? What if it's a parallel iterator?
         unsafe {
             let dimensional = &mut *self.dimensional;
             let linear_index = Dimensional::<T, S, N>::ravel_index(&index, &dimensional.shape());
