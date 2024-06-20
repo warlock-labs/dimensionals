@@ -1,5 +1,5 @@
 /// Syntactic sugar for idiomatic usage of Dimensionals.
-use crate::{Dimensional, DimensionalStorage};
+use crate::{storage::DimensionalStorage, Dimensional};
 use num::Num;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Sub};
 
@@ -125,7 +125,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::linear_storage::LinearArrayStorage;
+    use crate::storage::LinearArrayStorage;
     use crate::{matrix, vector};
 
     #[test]

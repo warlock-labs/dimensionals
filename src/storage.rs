@@ -1,6 +1,43 @@
-use crate::DimensionalStorage;
 use num::Num;
 use std::ops::{Index, IndexMut};
+
+/// A trait for storage backends for multidimensional arrays.
+///
+/// This trait defines methods for creating arrays filled with zeros or ones,
+/// and for creating an array from a vector of data.
+///
+/// # Type Parameters
+///
+/// * `T`: The element type of the array. Must implement `Num` and `Copy`.
+/// * `N`: The number of dimensions of the array.
+pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
+    Index<[usize; N], Output = T> + IndexMut<[usize; N], Output = T>
+{
+    /// Creates an array filled with zeros.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    fn zeros(shape: [usize; N]) -> Self;
+
+    /// Creates an array filled with ones.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    fn ones(shape: [usize; N]) -> Self;
+
+    /// Creates an array from a vector of data.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the array.
+    /// * `data`: The data to initialize the array with.
+    fn from_vec(shape: [usize; N], data: Vec<T>) -> Self;
+
+    /// Returns a mutable slice of the underlying data from storage
+    fn as_mut_slice(&mut self) -> &mut [T];
+}
 
 /// An enum representing the memory layout of a linear array.
 #[derive(Debug, Copy, Clone, PartialEq)]

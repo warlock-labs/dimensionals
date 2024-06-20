@@ -2,7 +2,7 @@
 //! It includes both immutable and mutable iterators, allowing for the efficient
 //! traversal and modification of Dimensional arrays.
 
-use crate::{Dimensional, DimensionalStorage};
+use crate::{storage::DimensionalStorage, Dimensional};
 use num::Num;
 use std::marker::PhantomData;
 
@@ -211,7 +211,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{linear_storage::LinearArrayStorage, Dimensional, matrix, vector};
+    use crate::{matrix, storage::LinearArrayStorage, vector, Dimensional};
 
     #[test]
     fn test_iter() {
