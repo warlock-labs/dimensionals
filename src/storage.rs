@@ -133,7 +133,7 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
     ///
     /// # Panics
     ///
-    /// Panics if the length of `data` doesn't match the product of dimensions in `shape`.
+    /// Panic if the length of `data` doesn't match the product of dimensions in `shape`.
     pub fn new(shape: [usize; N], data: Vec<T>, layout: LinearArrayLayout) -> Self {
         assert_eq!(
             shape.iter().product::<usize>(),
