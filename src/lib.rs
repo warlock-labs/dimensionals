@@ -1,20 +1,28 @@
 //! The Dimensionals library provides a multidimensional array implementation
 //! with a generic storage backend over a generic number type.
 //!
-//! In other words, it's got and element type `T`, a storage backend `S`
-//! and a number of dimensions `N`.
+//! # Core Concepts
 //!
-//! A scalar is a 0-dimensional object, or just the element of type `T` itself
-//! A vector is a 1-dimensional array of elements of type `T`
-//! A matrix is a 2-dimensional array of elements of type `T`
-//! A tensor is an `N`-dimensional array of elements of type `T`
+//! - Element type `T`: The type of data stored in the array.
+//! - Storage backend `S`: The underlying storage mechanism for the array.
+//! - Number of dimensions `N`: The dimensionality of the array.
 //!
-//! The goal of this library is to provide a flexible and efficient way to work with
-//! multidimensional arrays of numerics in Rust. Storage is generic over `S` to allow
+//! # Dimensional Types
+//!
+//! - Scalar: A 0-dimensional object, or just the element of type `T` itself.
+//! - Vector: A 1-dimensional array of elements of type `T`.
+//! - Matrix: A 2-dimensional array of elements of type `T`.
+//! - Tensor: An `N`-dimensional array of elements of type `T`, where N > 2.
+//!
+//! # Goals
+//!
+//! The primary goal of this library is to provide a flexible and efficient way to work with
+//! multidimensional arrays of numeric types in Rust. The generic storage backend `S` allows
 //! for different memory layouts and optimizations.
 //!
+//! # Convenience Macros
 //!
-//! The library also provides some convenience macros for creating arrays:
+//! The library provides convenience macros for creating arrays:
 //!
 //! - [`vector!`]: Creates a 1-dimensional array.
 //! - [`matrix!`]: Creates a 2-dimensional array.
@@ -22,8 +30,13 @@
 //! # Example
 //!
 //! ```
-//! use dimensionals::{matrix, Dimensional, LinearArrayStorage};
+//! use dimensionals::{matrix, vector, Dimensional, LinearArrayStorage};
 //!
+//! // Create a vector
+//! let v: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = vector![1, 2, 3, 4, 5];
+//! assert_eq!(v[[0]], 1);
+//!
+//! // Create a matrix
 //! let m: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> = matrix![
 //!     [1.0, 2.0, 3.0],
 //!     [4.0, 5.0, 6.0]
@@ -31,7 +44,6 @@
 //! assert_eq!(m[[0, 0]], 1.0);
 //! assert_eq!(m[[1, 1]], 5.0);
 //! ```
-
 mod core;
 mod iterators;
 mod operators;
@@ -40,13 +52,23 @@ mod storage;
 // Public API
 pub use core::Dimensional;
 pub use iterators::*;
+pub use storage::DimensionalStorage;
 pub use storage::LinearArrayStorage;
 
-// Macros
-
+/// Creates a 1-dimensional array (vector).
+///
+/// # Examples
+///
+/// ```
+/// use dimensionals::{vector, Dimensional, LinearArrayStorage};
+///
+/// let v: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = vector![1, 2, 3, 4, 5];
+/// assert_eq!(v[[0]], 1);
+/// assert_eq!(v[[4]], 5);
+/// ```
 #[macro_export]
 macro_rules! vector {
-    ($($value:expr),+) => {
+    ($($value:expr),+ $(,)?) => {
         {
             let data = vec![$($value),+];
             let shape = [data.len()];
@@ -55,6 +77,20 @@ macro_rules! vector {
     };
 }
 
+/// Creates a 2-dimensional array (matrix).
+///
+/// # Examples
+///
+/// ```
+/// use dimensionals::{matrix, Dimensional, LinearArrayStorage};
+///
+/// let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![
+///     [1, 2, 3],
+///     [4, 5, 6]
+/// ];
+/// assert_eq!(m[[0, 0]], 1);
+/// assert_eq!(m[[1, 2]], 6);
+/// ```
 #[macro_export]
 macro_rules! matrix {
     ($([$($value:expr),* $(,)?]),+ $(,)?) => {
@@ -68,44 +104,104 @@ macro_rules! matrix {
     };
 }
 
+// TODO: Implement a generic tensor macro
+// The tensor macro should create an N-dimensional array (N > 2) with the following features:
+// - Infer the number of dimensions and shape from the input
+// - Work with any number of dimensions (3 or more)
+// - Be as user-friendly as the vector! and matrix! macros
+// - Handle type inference correctly
+// - Integrate seamlessly with the Dimensional struct and LinearArrayStorage
+
 #[cfg(test)]
 mod tests {
-
     use super::*;
-    use crate::storage::LinearArrayStorage;
     use crate::{matrix, vector};
 
     #[test]
-    fn test_shape() {
-        let v = vector![1, 2, 3, 4, 5];
+    fn test_vector_creation() {
+        let v: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = vector![1, 2, 3, 4, 5];
         assert_eq!(v.shape(), [5]);
-
-        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        assert_eq!(m.shape(), [3, 3]);
+        assert_eq!(v[[0]], 1);
+        assert_eq!(v[[4]], 5);
     }
 
     #[test]
-    fn test_ndim() {
+    fn test_vector_indexing() {
+        let v = vector![10, 20, 30, 40, 50];
+        assert_eq!(v[[0]], 10);
+        assert_eq!(v[[2]], 30);
+        assert_eq!(v[[4]], 50);
+    }
+
+    #[test]
+    fn test_vector_iteration() {
+        let v = vector![1, 2, 3, 4, 5];
+        let sum: i32 = v.iter().sum();
+        assert_eq!(sum, 15);
+    }
+
+    #[test]
+    fn test_matrix_creation() {
+        let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![[1, 2, 3], [4, 5, 6]];
+        assert_eq!(m.shape(), [2, 3]);
+        assert_eq!(m[[0, 0]], 1);
+        assert_eq!(m[[1, 2]], 6);
+    }
+
+    #[test]
+    fn test_matrix_indexing() {
+        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+        assert_eq!(m[[0, 0]], 1);
+        assert_eq!(m[[1, 1]], 5);
+        assert_eq!(m[[2, 2]], 9);
+    }
+
+    #[test]
+    fn test_matrix_iteration() {
+        let m = matrix![[1, 2], [3, 4]];
+        let sum: i32 = m.iter().sum();
+        assert_eq!(sum, 10);
+    }
+
+    #[test]
+    fn test_dimensional_properties() {
         let v = vector![1, 2, 3, 4, 5];
         assert_eq!(v.ndim(), 1);
-
-        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        assert_eq!(m.ndim(), 2);
-    }
-
-    #[test]
-    fn test_len() {
-        let v = vector![1, 2, 3, 4, 5];
         assert_eq!(v.len(), 5);
+        assert_eq!(v.len_axis(0), 5);
 
-        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        assert_eq!(m.len(), 9);
+        let m = matrix![[1, 2, 3], [4, 5, 6]];
+        assert_eq!(m.ndim(), 2);
+        assert_eq!(m.len(), 6);
+        assert_eq!(m.len_axis(0), 2);
+        assert_eq!(m.len_axis(1), 3);
     }
 
     #[test]
-    fn test_len_axis() {
-        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        assert_eq!(m.len_axis(0), 3);
-        assert_eq!(m.len_axis(1), 3);
+    fn test_dimensional_from_fn() {
+        let v = Dimensional::<_, LinearArrayStorage<_, 1>, 1>::from_fn([5], |[i]| i * 2);
+        assert_eq!(v[[0]], 0);
+        assert_eq!(v[[2]], 4);
+        assert_eq!(v[[4]], 8);
+
+        let m = Dimensional::<_, LinearArrayStorage<_, 2>, 2>::from_fn([3, 3], |[i, j]| i + j);
+        assert_eq!(m[[0, 0]], 0);
+        assert_eq!(m[[1, 1]], 2);
+        assert_eq!(m[[2, 2]], 4);
+    }
+
+    #[test]
+    fn test_dimensional_zeros_and_ones() {
+        let v_zeros = Dimensional::<i32, LinearArrayStorage<i32, 1>, 1>::zeros([5]);
+        assert_eq!(v_zeros.iter().sum::<i32>(), 0);
+
+        let v_ones = Dimensional::<i32, LinearArrayStorage<i32, 1>, 1>::ones([5]);
+        assert_eq!(v_ones.iter().sum::<i32>(), 5);
+
+        let m_zeros = Dimensional::<i32, LinearArrayStorage<i32, 2>, 2>::zeros([3, 3]);
+        assert_eq!(m_zeros.iter().sum::<i32>(), 0);
+
+        let m_ones = Dimensional::<i32, LinearArrayStorage<i32, 2>, 2>::ones([3, 3]);
+        assert_eq!(m_ones.iter().sum::<i32>(), 9);
     }
 }
