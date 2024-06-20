@@ -10,15 +10,16 @@
 //! # Dimensional Types
 //!
 //! - Scalar: A 0-dimensional object, or just the element of type `T` itself.
-//! - Vector: A 1-dimensional array of elements of type `T`.
-//! - Matrix: A 2-dimensional array of elements of type `T`.
-//! - Tensor: An `N`-dimensional array of elements of type `T`, where N > 2.
+//! - Vector: A 1-dimensional array of elements with the type `T`.
+//! - Matrix: A 2-dimensional array of elements with the type `T`.
+//! - Tensor: An `N`-dimensional array of elements with the type `T`, where N > 2.
 //!
 //! # Goals
 //!
 //! The primary goal of this library is to provide a flexible and efficient way to work with
-//! multidimensional arrays of numeric types in Rust. The generic storage backend `S` allows
-//! for different memory layouts and optimizations.
+//! multidimensional arrays of numeric types in Rust.
+//!
+//! Using a generic storage backend, `S`, allows for different memory layouts and optimizations.
 //!
 //! # Convenience Macros
 //!

@@ -3,7 +3,7 @@
 - [ ] Add tensor macro for creating tensors
 - [ ] Remove the need for phantom data markers
 - [ ] Move shape data to type-system such that it is known at compile time
-- [ ] Support scalar, tensor arithmetic operations
+- [ * ] Support common arithmetic operations
 - [ ] Use safe rust in arithmetic operations
 - [ ] Support reshaping
 - [ ] Support appending
@@ -14,6 +14,9 @@
 - [ ] Use safe rust in appending
 - [ ] Use safe rust in storage backends
 - [ ] Linear algebra functions
+
+The signature for creating a Dimensional is ugly in that N must be speficied twice, a generalized 
+builder pattern, or obviation of the need to store twice would be ideal.
 
 In lib.rs:
 

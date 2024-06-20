@@ -168,7 +168,7 @@ where
 // Assignment operations
 
 /// Implements scalar addition assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::AddAssign, S, const N: usize> AddAssign<T> for Dimensional<T, S, N>
+impl<T: Num + Copy + AddAssign, S, const N: usize> AddAssign<T> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
@@ -178,7 +178,7 @@ where
 }
 
 /// Implements scalar subtraction assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::SubAssign, S, const N: usize> SubAssign<T> for Dimensional<T, S, N>
+impl<T: Num + Copy + SubAssign, S, const N: usize> SubAssign<T> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
@@ -188,7 +188,7 @@ where
 }
 
 /// Implements scalar multiplication assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::MulAssign, S, const N: usize> MulAssign<T> for Dimensional<T, S, N>
+impl<T: Num + Copy + MulAssign, S, const N: usize> MulAssign<T> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
@@ -198,7 +198,7 @@ where
 }
 
 /// Implements scalar division assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::DivAssign, S, const N: usize> DivAssign<T> for Dimensional<T, S, N>
+impl<T: Num + Copy + DivAssign, S, const N: usize> DivAssign<T> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
@@ -208,12 +208,12 @@ where
 }
 
 /// Implements element-wise addition assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::AddAssign, S, const N: usize> AddAssign<Dimensional<T, S, N>>
+impl<T: Num + Copy + AddAssign, S, const N: usize> AddAssign<&Dimensional<T, S, N>>
     for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
-    fn add_assign(&mut self, rhs: Dimensional<T, S, N>) {
+    fn add_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise addition assignment"
@@ -223,12 +223,12 @@ where
 }
 
 /// Implements element-wise subtraction assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::SubAssign, S, const N: usize> SubAssign<Dimensional<T, S, N>>
+impl<T: Num + Copy + SubAssign, S, const N: usize> SubAssign<&Dimensional<T, S, N>>
     for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
-    fn sub_assign(&mut self, rhs: Dimensional<T, S, N>) {
+    fn sub_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise subtraction assignment"
@@ -238,12 +238,12 @@ where
 }
 
 /// Implements element-wise multiplication assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::MulAssign, S, const N: usize> MulAssign<Dimensional<T, S, N>>
+impl<T: Num + Copy + MulAssign, S, const N: usize> MulAssign<&Dimensional<T, S, N>>
     for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
-    fn mul_assign(&mut self, rhs: Dimensional<T, S, N>) {
+    fn mul_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise multiplication assignment"
@@ -253,12 +253,12 @@ where
 }
 
 /// Implements element-wise division assignment for Dimensional arrays.
-impl<T: Num + Copy + std::ops::DivAssign, S, const N: usize> DivAssign<Dimensional<T, S, N>>
+impl<T: Num + Copy + DivAssign, S, const N: usize> DivAssign<&Dimensional<T, S, N>>
     for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
-    fn div_assign(&mut self, rhs: Dimensional<T, S, N>) {
+    fn div_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise division assignment"
@@ -278,6 +278,10 @@ where
         self.map(|x| -x)
     }
 }
+
+// TODO How much are these helper abstractions really helping?
+// Seems like .zip .map etc should do it without these.
+// We don't want bloat, we want a razor sharp and performant tool.
 
 impl<T, S, const N: usize> Dimensional<T, S, N>
 where
@@ -377,16 +381,16 @@ mod tests {
         let mut v1 = vector![1, 2, 3, 4, 5];
         let v2 = vector![5, 4, 3, 2, 1];
 
-        v1 += v2.clone();
+        v1 += &v2;
         assert_eq!(v1, vector![6, 6, 6, 6, 6]);
 
-        v1 -= v2.clone();
+        v1 -= &v2;
         assert_eq!(v1, vector![1, 2, 3, 4, 5]);
 
-        v1 *= v2.clone();
+        v1 *= &v2;
         assert_eq!(v1, vector![5, 8, 9, 8, 5]);
 
-        v1 /= v2.clone();
+        v1 /= &v2;
         assert_eq!(v1, vector![1, 2, 3, 4, 5]);
     }
 
@@ -419,13 +423,13 @@ mod tests {
         m3 /= 2;
         assert_eq!(m3, m1);
 
-        m3 += m2.clone();
+        m3 += &m2;
         assert_eq!(m3, matrix![[6, 8], [10, 12]]);
 
-        m3 -= m2.clone();
+        m3 -= &m2;
         assert_eq!(m3, m1);
 
-        m3 *= m2.clone();
+        m3 *= &m2;
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
 
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
