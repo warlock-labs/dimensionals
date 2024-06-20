@@ -18,6 +18,12 @@
 - [ ] Support Pola.rs integration
 - [ ] Support plotly-rs integration
 - [ ] Support argmin-rs integration
+- [ ] Support for rayon
+- [ ] Feature flags for enabling/disabling features
+- [ ] no-std
+- [ ] Support for WebAssembly
+- [ ] Support for WebGPU
+- [ ] Support for SVM target
 
 
 The goal is for this library to have an intuitive interface for working with

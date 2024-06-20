@@ -1,5 +1,5 @@
 use crate::storage::DimensionalStorage;
-use num::Num;
+use num_traits::Num;
 use std::marker::PhantomData;
 
 /// A multidimensional array type.

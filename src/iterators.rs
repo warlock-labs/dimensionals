@@ -3,7 +3,7 @@
 //! traversal and modification of Dimensional arrays.
 
 use crate::{storage::DimensionalStorage, Dimensional};
-use num::Num;
+use num_traits::Num;
 
 /// An iterator over the elements of a Dimensional array.
 ///

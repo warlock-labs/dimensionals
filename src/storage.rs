@@ -1,4 +1,4 @@
-use num::Num;
+use num_traits::Num;
 use std::ops::{Index, IndexMut};
 
 /// A trait for storage backends for multidimensional arrays.

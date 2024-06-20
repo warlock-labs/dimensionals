@@ -51,7 +51,7 @@ mod operators;
 mod storage;
 
 // Public API
-pub use core::Dimensional;
+pub use crate::core::Dimensional;
 pub use iterators::*;
 pub use storage::DimensionalStorage;
 pub use storage::LinearArrayStorage;

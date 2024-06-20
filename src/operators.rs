@@ -1,5 +1,5 @@
 use crate::{storage::DimensionalStorage, Dimensional};
-use num::Num;
+use num_traits::Num;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
