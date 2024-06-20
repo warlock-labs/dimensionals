@@ -125,7 +125,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use dimensionals::{vector, matrix};
+    /// use dimensionals::{Dimensional, LinearArrayStorage, vector, matrix};
     ///
     /// let v = vector![1, 2, 3, 4, 5];
     /// let mut iter = v.iter();
@@ -157,7 +157,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use dimensionals::{vector, matrix};
+    /// use dimensionals::{Dimensional, LinearArrayStorage, vector, matrix};
     ///
     /// let mut v = vector![1, 2, 3, 4, 5];
     /// for elem in v.iter_mut() {
