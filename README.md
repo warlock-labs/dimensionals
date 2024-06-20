@@ -5,7 +5,9 @@
 
 # dimensionals
 
-Dimensionals is a Rust library for working with n-dimensional data. It provides a flexible and efficient multidimensional array implementation with a generic storage backend.
+Dimensionals is a Rust library for working with n-dimensional data. It provides
+a flexible and efficient multidimensional array implementation with a generic
+storage backend.
 
 ## Motivations
 
@@ -18,11 +20,10 @@ The key motivations behind Dimensionals are:
 
 ## Features
 
-- Generic over element type and number of dimensions
-- Efficient storage using a linear memory layout
-- Index and mutable index operations
-- Convenient macros for array creation
-- Extensible with custom storage backends
+- Generic over an element type, number of dimensions, and storage backend
+- Iterators, slices, indexing, and other standard Rust traits
+- Ergonomic and idiomatic `std::ops` implementations for arithmetic operations
+- Convenient macros for vector and matrix creation
 
 ## Usage
 
@@ -64,13 +65,15 @@ The following features and improvements are planned for future releases:
 
 ## Performance
 
-The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` and computes element indices on the fly. This provides good cache locality for traversals, but may not be optimal for sparse or very high dimensional arrays.
+The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` and computes element indices on the fly. This
+provides good cache locality for traversals, but may not be optimal for sparse or very high dimensional arrays.
 
 Alternative storage backends can be implemented by defining a type that implements the `DimensionalStorage` trait.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on the [GitHub repository](https://github.com/warlock-labs/dimensionals).
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on
+the [GitHub repository](https://github.com/warlock-labs/dimensionals).
 
 ## License
 
@@ -78,7 +81,8 @@ This project is licensed under the [MIT License](https://choosealicense.com/lice
 
 ## Acknowledgements
 
-This project is inspired by and builds upon ideas from several existing multidimensional array libraries in Rust and other languages.
+This project is inspired by and builds upon ideas from several existing multidimensional array libraries in Rust and
+other languages.
 
 ## Contact
 

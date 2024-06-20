@@ -11,6 +11,7 @@ where
 {
     type Output = T;
 
+    /// Returns an index into the array using a multidimensional index à la [i, j, k].
     fn index(&self, index: [usize; N]) -> &Self::Output {
         &self.storage[index]
     }
@@ -21,16 +22,18 @@ impl<T: Num + Copy, S, const N: usize> IndexMut<[usize; N]> for Dimensional<T, S
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Returns a mutable index into the array using a multidimensional index à la [i, j, k].
     fn index_mut(&mut self, index: [usize; N]) -> &mut Self::Output {
         &mut self.storage[index]
     }
 }
 
-/// Implements equality comparison for Dimensional arrays.
+/// Implements partial equality comparison for Dimensional arrays.
 impl<T: Num + Copy + PartialEq, S, const N: usize> PartialEq for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Compares two `Dimensional` arrays for partial equality.
     fn eq(&self, other: &Self) -> bool {
         if self.shape != other.shape {
             return false;
@@ -40,6 +43,7 @@ where
     }
 }
 
+/// Implements equality comparison for Dimensional arrays.
 impl<T: Num + Copy + Eq, S, const N: usize> Eq for Dimensional<T, S, N> where
     S: DimensionalStorage<T, N>
 {
@@ -54,6 +58,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Adds a scalar to a `Dimensional` array element-wise.
     fn add(self, rhs: T) -> Self::Output {
         self.map(|x| x + rhs)
     }
@@ -66,6 +71,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Subtracts a scalar from a `Dimensional` array element-wise.
     fn sub(self, rhs: T) -> Self::Output {
         self.map(|x| x - rhs)
     }
@@ -78,6 +84,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Multiplies a `Dimensional` array by a scalar element-wise.
     fn mul(self, rhs: T) -> Self::Output {
         self.map(|x| x * rhs)
     }
@@ -90,6 +97,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    // Divides a `Dimensional` array by a scalar element-wise.
     fn div(self, rhs: T) -> Self::Output {
         self.map(|x| x / rhs)
     }
@@ -104,6 +112,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Adds two `Dimensional` arrays element-wise.
     fn add(self, rhs: Self) -> Self::Output {
         assert_eq!(
             self.shape(),
@@ -121,6 +130,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Subtracts one `Dimensional` array from another element-wise.
     fn sub(self, rhs: Self) -> Self::Output {
         assert_eq!(
             self.shape(),
@@ -138,6 +148,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Multiplies two `Dimensional` arrays element-wise.
     fn mul(self, rhs: Self) -> Self::Output {
         assert_eq!(
             self.shape(),
@@ -155,6 +166,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Divides one `Dimensional` array by another element-wise.
     fn div(self, rhs: Self) -> Self::Output {
         assert_eq!(
             self.shape(),
@@ -172,6 +184,7 @@ impl<T: Num + Copy + AddAssign, S, const N: usize> AddAssign<T> for Dimensional<
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Adds a scalar to a `Dimensional` array element-wise in-place.
     fn add_assign(&mut self, rhs: T) {
         self.map_inplace(|x| *x += rhs);
     }
@@ -182,6 +195,7 @@ impl<T: Num + Copy + SubAssign, S, const N: usize> SubAssign<T> for Dimensional<
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Subtracts a scalar from a `Dimensional` array element-wise in-place.
     fn sub_assign(&mut self, rhs: T) {
         self.map_inplace(|x| *x -= rhs);
     }
@@ -192,6 +206,7 @@ impl<T: Num + Copy + MulAssign, S, const N: usize> MulAssign<T> for Dimensional<
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Multiplies a `Dimensional` array by a scalar element-wise in-place.
     fn mul_assign(&mut self, rhs: T) {
         self.map_inplace(|x| *x *= rhs);
     }
@@ -202,6 +217,7 @@ impl<T: Num + Copy + DivAssign, S, const N: usize> DivAssign<T> for Dimensional<
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Divides a `Dimensional` array by a scalar element-wise in-place.
     fn div_assign(&mut self, rhs: T) {
         self.map_inplace(|x| *x /= rhs);
     }
@@ -213,12 +229,13 @@ impl<T: Num + Copy + AddAssign, S, const N: usize> AddAssign<&Dimensional<T, S, 
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Adds two `Dimensional` arrays element-wise in-place.
     fn add_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise addition assignment"
         );
-        self.zip_map_inplace(&rhs, |a, b| *a += b);
+        self.zip_map_inplace(rhs, |a, b| *a += b);
     }
 }
 
@@ -228,12 +245,13 @@ impl<T: Num + Copy + SubAssign, S, const N: usize> SubAssign<&Dimensional<T, S, 
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Subtracts one `Dimensional` array from another element-wise in-place.
     fn sub_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise subtraction assignment"
         );
-        self.zip_map_inplace(&rhs, |a, b| *a -= b);
+        self.zip_map_inplace(rhs, |a, b| *a -= b);
     }
 }
 
@@ -243,12 +261,13 @@ impl<T: Num + Copy + MulAssign, S, const N: usize> MulAssign<&Dimensional<T, S, 
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Multiplies two `Dimensional` arrays element-wise in-place.
     fn mul_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise multiplication assignment"
         );
-        self.zip_map_inplace(&rhs, |a, b| *a *= b);
+        self.zip_map_inplace(rhs, |a, b| *a *= b);
     }
 }
 
@@ -258,12 +277,13 @@ impl<T: Num + Copy + DivAssign, S, const N: usize> DivAssign<&Dimensional<T, S, 
 where
     S: DimensionalStorage<T, N>,
 {
+    /// Divides one `Dimensional` array by another element-wise in-place.
     fn div_assign(&mut self, rhs: &Dimensional<T, S, N>) {
         assert_eq!(
             self.shape, rhs.shape,
             "Shapes must match for element-wise division assignment"
         );
-        self.zip_map_inplace(&rhs, |a, b| *a /= b);
+        self.zip_map_inplace(rhs, |a, b| *a /= b);
     }
 }
 
@@ -274,6 +294,7 @@ where
 {
     type Output = Dimensional<T, S, N>;
 
+    /// Negates a `Dimensional` array element-wise.
     fn neg(self) -> Self::Output {
         self.map(|x| -x)
     }
