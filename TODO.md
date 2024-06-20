@@ -4,16 +4,27 @@
 - [ ] Remove the need for phantom data markers
 - [ ] Move shape data to type-system such that it is known at compile time
 - [ * ] Support common arithmetic operations
-- [ ] Use safe rust in arithmetic operations
+- [ * ] Use safe rust in arithmetic operations
 - [ ] Support reshaping
 - [ ] Support appending
 - [ ] Support removing
-- [ ] Support Apache Arrow or safetensors storage backend
-- [ ] Support Pola.rs integration
-- [ ] Use safe rust in reshaping
-- [ ] Use safe rust in appending
-- [ ] Use safe rust in storage backends
 - [ ] Linear algebra functions
+- [ ] Support for common statistical functions
+- [ ] Support for geometric functions like Brownian motion
+- [ ] Support for GPU offloading
+- [ ] Support for SIMD
+- [ ] Matrix multiplication
+- [ ] Support Apache Arrow or safetensors storage backend?
+- [ ] Support Pola.rs integration
+- [ ] Support plotly-rs integration
+- [ ] Support argmin-rs integration
+
+
+The goal is for this library to have an intuitive interface for working with
+n dimensional/tensor data, while interfacing with libraries like Polars, and
+by proxy plotly-rs. It should have linear algebra functionality, and integration
+with argmin-rs for optimization. It should have common statistical functions
+such that it is able to work in a statistical computing environment.
 
 The signature for creating a Dimensional is ugly in that N must be speficied twice, a generalized 
 builder pattern, or obviation of the need to store twice would be ideal.
