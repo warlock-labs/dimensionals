@@ -1,6 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use dimensionals::{Dimensional, LinearArrayStorage};
 
+// TODO: This needs meaningful benchmarks for common operations useful in
+// quantitive situations
+
 fn bench_dimensional_array_creation_zeros(c: &mut Criterion) {
     let shape = [1000, 1000];
     c.bench_function("dimensional_array_creation_zeros", |b| {
