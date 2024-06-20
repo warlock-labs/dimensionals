@@ -1,8 +1,9 @@
+/// Syntactic sugar for idiomatic usage of Dimensionals.
 use crate::{Dimensional, DimensionalStorage};
 use num::Num;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Sub};
 
-/// Indexes into the array using a multi-dimensional index à la `array[[i, j]]`.
+/// Indexes into the array using a multi-dimensional index à la `array[[i, j; N]]`.
 impl<T: Num + Copy, S, const N: usize> Index<[usize; N]> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
@@ -14,7 +15,7 @@ where
     }
 }
 
-/// Mutable indexing into the array using a multi-dimensional index à la `array[[i, j]]`.
+/// Mutable indexing into the array using a multi-dimensional index à la `array[[i, j; N]]`.
 impl<T: Num + Copy, S, const N: usize> IndexMut<[usize; N]> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
@@ -23,6 +24,8 @@ where
         &mut self.storage[index]
     }
 }
+
+// TODO(The arithmetic operations really require good iterators to be efficient).
 
 /// Equality comparison for arrays.
 impl<T: Num + Copy + PartialEq, S, const N: usize> PartialEq for Dimensional<T, S, N>
@@ -44,6 +47,10 @@ where
         true
     }
 }
+impl<T: Num + Copy + PartialEq, S, const N: usize> Eq for Dimensional<T, S, N> where
+    S: DimensionalStorage<T, N>
+{
+}
 
 // Scalar addition
 impl<T: Num + Copy, S, const N: usize> Add<T> for Dimensional<T, S, N>
@@ -52,15 +59,9 @@ where
 {
     type Output = Self;
 
+    /// Adds a scalar `rhs` to each element of the array.
     fn add(self, rhs: T) -> Self::Output {
-        // Create a new array filled with zeros
-        let mut result = Dimensional::zeros(self.shape);
-        // Fill each element with the sum of the `rhs` and the corresponding element in `self`
-        for i in 0..self.shape.iter().product::<usize>() {
-            let index = Self::unravel_index(i, &self.shape);
-            result[index] = self[index] + rhs;
-        }
-        result
+        todo!("Implement scalar addition")
     }
 }
 
@@ -71,15 +72,9 @@ where
 {
     type Output = Self;
 
+    /// Subtracts a scalar `rhs` from each element of the array.
     fn sub(self, rhs: T) -> Self::Output {
-        // Create a new array filled with zeros
-        let mut result = Dimensional::zeros(self.shape);
-        // Fill each element with the difference of the `rhs` and the corresponding element in `self`
-        for i in 0..self.shape.iter().product::<usize>() {
-            let index = Self::unravel_index(i, &self.shape);
-            result[index] = self[index] - rhs;
-        }
-        result
+        todo!("Implement scalar subtraction")
     }
 }
 
@@ -90,15 +85,9 @@ where
 {
     type Output = Self;
 
+    /// Multiplies a scalar `rhs` for each element of the array.
     fn mul(self, rhs: T) -> Self::Output {
-        // Create a new array filled with zeros
-        let mut result = Dimensional::zeros(self.shape);
-        // Fill each element with the product of the `rhs` and the corresponding element in `self`
-        for i in 0..self.shape.iter().product::<usize>() {
-            let index = Self::unravel_index(i, &self.shape);
-            result[index] = self[index] * rhs;
-        }
-        result
+        todo!("Implement scalar multiplication")
     }
 }
 
@@ -109,14 +98,65 @@ where
 {
     type Output = Self;
 
+    /// Divides each element of the array by a scalar `rhs`.
     fn div(self, rhs: T) -> Self::Output {
-        // Create a new array filled with zeros
-        let mut result = Dimensional::zeros(self.shape);
-        // Fill each element with the quotient of the `rhs` and the corresponding element in `self`
-        for i in 0..self.shape.iter().product::<usize>() {
-            let index = Self::unravel_index(i, &self.shape);
-            result[index] = self[index] / rhs;
-        }
-        result
+        todo!("Implement scalar division")
+    }
+}
+
+// Element-wise operations
+
+// Tensor Addition
+impl<T: Num + Copy, S, const N: usize> Add<Dimensional<T, S, N>> for Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    type Output = Self;
+
+    /// Adds two arrays element-wise.
+    fn add(self, rhs: Dimensional<T, S, N>) -> Self::Output {
+        todo!("Implement tensor division")
+    }
+}
+
+// This should support all other possible operator overloads to perform linear operations
+
+// tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::linear_storage::LinearArrayStorage;
+    use crate::{matrix, vector};
+
+    #[test]
+    fn test_indexing() {
+        let v = vector![1, 2, 3, 4, 5];
+        assert_eq!(v[[0]], 1);
+        assert_eq!(v[[2]], 3);
+        assert_eq!(v[[4]], 5);
+
+        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+        assert_eq!(m[[0, 0]], 1);
+        assert_eq!(m[[1, 1]], 5);
+        assert_eq!(m[[2, 2]], 9);
+    }
+
+    #[test]
+    fn test_mutable_indexing() {
+        let mut v = vector![1, 2, 3, 4, 5];
+        v[[0]] = 10;
+        v[[2]] = 30;
+        v[[4]] = 50;
+        assert_eq!(v[[0]], 10);
+        assert_eq!(v[[2]], 30);
+        assert_eq!(v[[4]], 50);
+
+        let mut m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+        m[[0, 0]] = 10;
+        m[[1, 1]] = 50;
+        m[[2, 2]] = 90;
+        assert_eq!(m[[0, 0]], 10);
+        assert_eq!(m[[1, 1]], 50);
+        assert_eq!(m[[2, 2]], 90);
     }
 }

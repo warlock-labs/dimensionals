@@ -58,6 +58,11 @@ impl<T: Num + Copy, const N: usize> DimensionalStorage<T, N> for LinearArrayStor
     fn from_vec(shape: [usize; N], data: Vec<T>) -> Self {
         LinearArrayStorage::new(shape, data, LinearArrayLayout::RowMajor, 1)
     }
+
+    /// Returns a mutable slice of the underlying data.
+    fn as_mut_slice(&mut self) -> &mut [T] {
+        &mut self.data
+    }
 }
 
 impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {

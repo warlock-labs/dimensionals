@@ -9,7 +9,6 @@
 //!
 //! The library also provides some convenience macros for creating arrays:
 //!
-//! - [`scalar!`]: Creates a 0-dimensional array (a single value).
 //! - [`vector!`]: Creates a 1-dimensional array.
 //! - [`matrix!`]: Creates a 2-dimensional array.
 //!
@@ -18,12 +17,12 @@
 //! ```
 //! use dimensionals::{matrix, Dimensional, LinearArrayStorage};
 //!
-//! let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![
-//!     [1, 2, 3],
-//!     [4, 5, 6]
+//! let m: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> = matrix![
+//!     [1.0, 2.0, 3.0],
+//!     [4.0, 5.0, 6.0]
 //! ];
-//! assert_eq!(m[[0, 0]], 1);
-//! assert_eq!(m[[1, 1]], 5);
+//! assert_eq!(m[[0, 0]], 1.0);
+//! assert_eq!(m[[1, 1]], 5.0);
 //! ```
 //!
 //! # Performance
@@ -35,6 +34,7 @@
 //! Alternative storage backends can be implemented by defining a type that
 //! implements the `DimensionalStorage` trait.
 
+mod iterators;
 mod linear_storage;
 mod operators;
 
@@ -77,6 +77,9 @@ pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
     /// * `shape`: The shape of the array.
     /// * `data`: The data to initialize the array with.
     fn from_vec(shape: [usize; N], data: Vec<T>) -> Self;
+
+    /// Returns a mutable slice of the underlying data from storage
+    fn as_mut_slice(&mut self) -> &mut [T];
 }
 
 /// A multidimensional array type.
@@ -194,6 +197,19 @@ where
         unraveled
     }
 
+    /// Converts a multidimensional index to a linear index.
+    ///
+    /// # Arguments
+    ///
+    /// * `indices`: The multidimensional index.
+    /// * `shape`: The shape of the array.
+    fn ravel_index(indices: &[usize; N], shape: &[usize; N]) -> usize {
+        indices
+            .iter()
+            .zip(shape.iter())
+            .fold(0, |acc, (&i, &s)| acc * s + i)
+    }
+
     /// Returns the shape of the array.
     pub fn shape(&self) -> [usize; N] {
         self.shape
@@ -222,18 +238,14 @@ where
     pub fn len_axis(&self, axis: usize) -> usize {
         self.shape[axis]
     }
+
+    /// Returns a mutable slice of the underlying data.
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
+        self.storage.as_mut_slice()
+    }
 }
 
 // Macros
-
-#[macro_export]
-macro_rules! scalar {
-    ($value:expr) => {{
-        let data = vec![$value];
-        let shape = [1];
-        Dimensional::<_, LinearArrayStorage<_, 1>, 1>::from_fn(shape, |[i]| data[i])
-    }};
-}
 
 #[macro_export]
 macro_rules! vector {
@@ -265,38 +277,6 @@ mod tests {
     use super::*;
     use crate::linear_storage::LinearArrayStorage;
     use crate::{matrix, vector};
-
-    #[test]
-    fn test_indexing() {
-        let v = vector![1, 2, 3, 4, 5];
-        assert_eq!(v[[0]], 1);
-        assert_eq!(v[[2]], 3);
-        assert_eq!(v[[4]], 5);
-
-        let m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        assert_eq!(m[[0, 0]], 1);
-        assert_eq!(m[[1, 1]], 5);
-        assert_eq!(m[[2, 2]], 9);
-    }
-
-    #[test]
-    fn test_mutable_indexing() {
-        let mut v = vector![1, 2, 3, 4, 5];
-        v[[0]] = 10;
-        v[[2]] = 30;
-        v[[4]] = 50;
-        assert_eq!(v[[0]], 10);
-        assert_eq!(v[[2]], 30);
-        assert_eq!(v[[4]], 50);
-
-        let mut m = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9]];
-        m[[0, 0]] = 10;
-        m[[1, 1]] = 50;
-        m[[2, 2]] = 90;
-        assert_eq!(m[[0, 0]], 10);
-        assert_eq!(m[[1, 1]], 50);
-        assert_eq!(m[[2, 2]], 90);
-    }
 
     #[test]
     fn test_shape() {
