@@ -21,7 +21,6 @@ The key motivations behind Dimensionals are:
 - Generic over element type and number of dimensions
 - Efficient storage using a linear memory layout
 - Index and mutable index operations
-- Arithmetic operations for 1D and 2D arrays
 - Convenient macros for array creation
 - Extensible with custom storage backends
 
@@ -55,6 +54,7 @@ For more examples and usage details, see the [API documentation](https://docs.rs
 
 The following features and improvements are planned for future releases:
 
+- Arithmetic operations for 1D and 2D arrays
 - SIMD support for improved performance on CPU.
 - GPU support for offloading computations to compatible GPUs.
 - Comprehensive scalar, vector, matrix, and tensor algebra operations.

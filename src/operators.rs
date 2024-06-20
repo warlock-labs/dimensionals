@@ -52,6 +52,8 @@ impl<T: Num + Copy + PartialEq, S, const N: usize> Eq for Dimensional<T, S, N> w
 {
 }
 
+// Scalar arithmetic operations
+
 // Scalar addition
 impl<T: Num + Copy, S, const N: usize> Add<T> for Dimensional<T, S, N>
 where
@@ -115,7 +117,46 @@ where
 
     /// Adds two arrays element-wise.
     fn add(self, _rhs: Dimensional<T, S, N>) -> Self::Output {
-        todo!("Implement tensor division")
+        todo!("Implement element-wise tensor addition")
+    }
+}
+
+// Tensor Subtraction
+impl<T: Num + Copy, S, const N: usize> Sub<Dimensional<T, S, N>> for Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    type Output = Self;
+
+    /// Subtracts two arrays element-wise.
+    fn sub(self, _rhs: Dimensional<T, S, N>) -> Self::Output {
+        todo!("Implement element-wise tensor subtraction")
+    }
+}
+
+// Tensor Multiplication
+impl<T: Num + Copy, S, const N: usize> Mul<Dimensional<T, S, N>> for Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    type Output = Self;
+
+    /// Multiplies two arrays element-wise.
+    fn mul(self, _rhs: Dimensional<T, S, N>) -> Self::Output {
+        todo!("Implement element-wise tensor multiplication")
+    }
+}
+
+// Tensor Division
+impl<T: Num + Copy, S, const N: usize> Div<Dimensional<T, S, N>> for Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    type Output = Self;
+
+    /// Divides two arrays element-wise.
+    fn div(self, _rhs: Dimensional<T, S, N>) -> Self::Output {
+        todo!("Implement element-wise tensor division")
     }
 }
 

@@ -1,13 +1,18 @@
 //! The Dimensionals library provides a multidimensional array implementation
 //! with a generic storage backend over a generic number type.
 //!
+//! In other words, it's got and element type `T`, a storage backend `S`
+//! and a number of dimensions `N`.
+//!
 //! A scalar is a 0-dimensional object, or just the element of type `T` itself
 //! A vector is a 1-dimensional array of elements of type `T`
 //! A matrix is a 2-dimensional array of elements of type `T`
-//! A tensor is an n-dimensional array of elements of type `T`
+//! A tensor is an `N`-dimensional array of elements of type `T`
 //!
 //! The goal of this library is to provide a flexible and efficient way to work with
-//! multidimensional arrays of numerics in Rust.
+//! multidimensional arrays of numerics in Rust. Storage is generic over `S` to allow
+//! for different memory layouts and optimizations.
+//!
 //!
 //! The library also provides some convenience macros for creating arrays:
 //!
@@ -26,15 +31,6 @@
 //! assert_eq!(m[[0, 0]], 1.0);
 //! assert_eq!(m[[1, 1]], 5.0);
 //! ```
-//!
-//! # Performance
-//!
-//! The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>`
-//! and computes element indices on the fly. This provides good cache locality
-//! for traversals, but may not be optimal for sparse or very high dimensional arrays.
-//!  
-//! Alternative storage backends can be implemented by defining a type that
-//! implements the `DimensionalStorage` trait.
 
 mod core;
 mod iterators;
