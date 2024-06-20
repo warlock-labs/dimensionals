@@ -60,7 +60,7 @@ where
     type Output = Self;
 
     /// Adds a scalar `rhs` to each element of the array.
-    fn add(self, rhs: T) -> Self::Output {
+    fn add(self, _rhs: T) -> Self::Output {
         todo!("Implement scalar addition")
     }
 }
@@ -73,7 +73,7 @@ where
     type Output = Self;
 
     /// Subtracts a scalar `rhs` from each element of the array.
-    fn sub(self, rhs: T) -> Self::Output {
+    fn sub(self, _rhs: T) -> Self::Output {
         todo!("Implement scalar subtraction")
     }
 }
@@ -86,7 +86,7 @@ where
     type Output = Self;
 
     /// Multiplies a scalar `rhs` for each element of the array.
-    fn mul(self, rhs: T) -> Self::Output {
+    fn mul(self, _rhs: T) -> Self::Output {
         todo!("Implement scalar multiplication")
     }
 }
@@ -99,7 +99,7 @@ where
     type Output = Self;
 
     /// Divides each element of the array by a scalar `rhs`.
-    fn div(self, rhs: T) -> Self::Output {
+    fn div(self, _rhs: T) -> Self::Output {
         todo!("Implement scalar division")
     }
 }
@@ -114,7 +114,7 @@ where
     type Output = Self;
 
     /// Adds two arrays element-wise.
-    fn add(self, rhs: Dimensional<T, S, N>) -> Self::Output {
+    fn add(self, _rhs: Dimensional<T, S, N>) -> Self::Output {
         todo!("Implement tensor division")
     }
 }
