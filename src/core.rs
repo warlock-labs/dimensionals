@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 /// * `T`: The element type of the array. Must implement `Num` and `Copy`.
 /// * `S`: The storage backend for the array. Must implement `DimensionalStorage`.
 /// * `N`: The dimensionality of the array a `usize`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Copy)]
 pub struct Dimensional<T: Num + Copy, S, const N: usize>
 where
     S: DimensionalStorage<T, N>,
@@ -139,6 +139,8 @@ where
         }
     }
 
+    // TODO Seems like both of these could just use the shape already on the object
+
     /// Converts a linear index to a multidimensional index.
     ///
     /// # Arguments
@@ -178,6 +180,8 @@ where
             .fold(0, |acc, (&i, &s)| acc * s + i)
     }
 
+    // TODO what if any is the use case for jagged arrays?
+
     /// Returns the shape of the array.
     ///
     /// # Returns
@@ -195,6 +199,8 @@ where
     pub fn ndim(&self) -> usize {
         N
     }
+
+    // TODO seems like this could me memoized
 
     /// Returns the total number of elements in the array.
     ///
@@ -232,6 +238,8 @@ where
         self.shape[axis]
     }
 
+    // TODO Seems like there may need to be an abstraction layer here
+
     /// Returns a mutable slice of the underlying data.
     ///
     /// # Returns
@@ -240,6 +248,8 @@ where
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.storage.as_mut_slice()
     }
+
+    // TODO same story here, this seems pretty tightly coupled to the storage
 
     /// Returns an immutable slice of the underlying data.
     ///

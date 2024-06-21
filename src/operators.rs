@@ -5,6 +5,7 @@ use std::ops::{
 };
 
 /// Implements indexing operations for Dimensional arrays.
+
 impl<T: Num + Copy, S, const N: usize> Index<[usize; N]> for Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
@@ -13,6 +14,7 @@ where
 
     /// Returns an index into the array using a multidimensional index à la [i, j, k].
     fn index(&self, index: [usize; N]) -> &Self::Output {
+        // TODO(This is too tightly coupled to the storage layout)
         &self.storage[index]
     }
 }
@@ -24,6 +26,7 @@ where
 {
     /// Returns a mutable index into the array using a multidimensional index à la [i, j, k].
     fn index_mut(&mut self, index: [usize; N]) -> &mut Self::Output {
+        // TODO(This is too tightly coupled to the storage layout)
         &mut self.storage[index]
     }
 }
@@ -39,14 +42,9 @@ where
             return false;
         }
 
+        // TODO(Benchmark copying these to slice vs not)
         self.as_slice() == other.as_slice()
     }
-}
-
-/// Implements equality comparison for Dimensional arrays.
-impl<T: Num + Copy + Eq, S, const N: usize> Eq for Dimensional<T, S, N> where
-    S: DimensionalStorage<T, N>
-{
 }
 
 // Scalar arithmetic operations

@@ -1,10 +1,16 @@
-- [ ] Use safe rust in iterators
+- [ * ] Basic N-dimensional array
+- [ * ] Basic indexing
+- [ * ] Basic iterators
+- [ * ] Basic arithmetic operations
+- [ * ] Basic slicing
 - [ * ] Use safe rust in indexing
-- [ ] Add tensor macro for creating tensors
-- [ ] Remove the need for phantom data markers
-- [ ] Move shape data to type-system such that it is known at compile time
 - [ * ] Support common arithmetic operations
 - [ * ] Use safe rust in arithmetic operations
+- [ ] Move shape data to type-system such that it is known at compile time?
+- [ ] Matrix multiplication
+- [ ] Use safe rust in iterators
+- [ ] Add tensor macro for creating tensors
+- [ ] Remove the need for phantom data markers
 - [ ] Support reshaping
 - [ ] Support appending
 - [ ] Support removing
