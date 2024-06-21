@@ -113,7 +113,7 @@ where
     ///
     /// A fmt::Result indicating whether the operation was successful
     fn fmt_nd(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Dimensional {}D array: ", N)?;
+        write!(f, "{}D array: ", N)?;
         write!(f, "shape {:?}, ", self.shape())?;
         write!(f, "data [")?;
 
@@ -197,7 +197,7 @@ mod tests {
             Dimensional::from_fn([2, 2, 2], |[i, j, k]| (i * 4 + j * 2 + k) as i32);
         assert_eq!(
             format!("{}", array),
-            "Dimensional 3D array: shape [2, 2, 2], data [0, 1, 2, ..., 7]"
+            "3D array: shape [2, 2, 2], data [0, 1, 2, ..., 7]"
         );
 
         // Test 3D array with small size
@@ -205,15 +205,12 @@ mod tests {
             Dimensional::from_fn([1, 2, 3], |[i, j, k]| (i * 6 + j * 3 + k) as i32);
         assert_eq!(
             format!("{}", small),
-            "Dimensional 3D array: shape [1, 2, 3], data [0, 1, 2, 3, 4, 5]"
+            "3D array: shape [1, 2, 3], data [0, 1, 2, 3, 4, 5]"
         );
 
         // Test empty 3D array
         let empty: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> = Dimensional::zeros([0, 0, 0]);
-        assert_eq!(
-            format!("{}", empty),
-            "Dimensional 3D array: shape [0, 0, 0], data []"
-        );
+        assert_eq!(format!("{}", empty), "3D array: shape [0, 0, 0], data []");
     }
 
     #[test]
@@ -237,8 +234,12 @@ mod tests {
 
         // TODO(Fix this test case, maybe issue with ravel_index)
         // Test float precision for 3D array
-        //let precise_3d: Dimensional<f64, LinearArrayStorage<f64, 3>, 3> = Dimensional::from_fn([2, 2, 2], |[i, j, k]| (i + j + k) as f64 / 3.0);
-        //assert_eq!(format!("{:.2}", precise_3d), "Dimensional 3D array: shape [2, 2, 2], data [0.00, 0.33, 0.67, ..., 1.67]");
+        let precise_3d: Dimensional<f64, LinearArrayStorage<f64, 3>, 3> =
+            Dimensional::from_fn([3, 3, 3], |[i, j, k]| (i + j + k) as f64 / 3.0);
+        assert_eq!(
+            format!("{:.2}", precise_3d),
+            "3D array: shape [3, 3, 3], data [0.00, 0.33, 0.67, ..., 2.00]"
+        );
     }
 
     #[test]
@@ -249,7 +250,7 @@ mod tests {
             });
         assert_eq!(
             format!("{}", array),
-            "Dimensional 4D array: shape [2, 2, 2, 2], data [0, 1, 2, ..., 15]"
+            "4D array: shape [2, 2, 2, 2], data [0, 1, 2, ..., 15]"
         );
 
         // Test 5D array
@@ -259,7 +260,7 @@ mod tests {
             });
         assert_eq!(
             format!("{}", array_5d),
-            "Dimensional 5D array: shape [2, 2, 2, 2, 2], data [0, 1, 2, ..., 31]"
+            "5D array: shape [2, 2, 2, 2, 2], data [0, 1, 2, ..., 31]"
         );
     }
 }
