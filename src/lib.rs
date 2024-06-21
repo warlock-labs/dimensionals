@@ -49,6 +49,7 @@ mod core;
 mod iterators;
 mod operators;
 mod storage;
+mod display;
 
 // Public API
 pub use crate::core::Dimensional;
