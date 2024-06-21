@@ -284,8 +284,7 @@ where
     /// assert_eq!(eye[[2, 2]], 1);
     /// assert_eq!(eye[[0, 1]], 0);
     /// ```
-    pub fn eye(n: usize) -> Self
-    {
+    pub fn eye(n: usize) -> Self {
         Self::from_fn([n, n], |[i, j]| if i == j { T::one() } else { T::zero() })
     }
 
@@ -308,8 +307,7 @@ where
     /// assert_eq!(eye[[2, 2]], 2.5);
     /// assert_eq!(eye[[0, 1]], 0.0);
     /// ```
-    pub fn eye_value(n: usize, value: T) -> Self
-    {
+    pub fn eye_value(n: usize, value: T) -> Self {
         Self::from_fn([n, n], |[i, j]| if i == j { value } else { T::zero() })
     }
 }
@@ -450,7 +448,8 @@ mod tests {
         assert_eq!(eye_int[[1, 2]], 0);
 
         // Test with floating-point type
-        let eye_float: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> = Dimensional::eye_value(2, 3.14);
+        let eye_float: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> =
+            Dimensional::eye_value(2, 3.14);
         assert_eq!(eye_float.shape(), [2, 2]);
         assert_eq!(eye_float[[0, 0]], 3.14);
         assert_eq!(eye_float[[1, 1]], 3.14);
@@ -458,7 +457,8 @@ mod tests {
         assert_eq!(eye_float[[1, 0]], 0.0);
 
         // Test with a negative value
-        let eye_neg: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::eye_value(2, -1);
+        let eye_neg: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+            Dimensional::eye_value(2, -1);
         assert_eq!(eye_neg.shape(), [2, 2]);
         assert_eq!(eye_neg[[0, 0]], -1);
         assert_eq!(eye_neg[[1, 1]], -1);

@@ -46,10 +46,10 @@
 //! assert_eq!(m[[1, 1]], 5.0);
 //! ```
 mod core;
+mod display;
 mod iterators;
 mod operators;
 mod storage;
-mod display;
 
 // Public API
 pub use crate::core::Dimensional;
