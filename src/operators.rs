@@ -47,6 +47,43 @@ where
     }
 }
 
+// TODO(These operators in general need an audit and correction)
+// for varying operations between scalars, vectors, matrices and tensors.
+// 
+// Some will fit neatly into the rust operators
+// Some will need to be implemented as methods
+//
+// Scalars:
+// Addition: a + b
+// Subtraction: a - b
+// Multiplication: a * b
+// Division: a / b
+// Vectors:
+// Addition: (a + b)_i = a_i + b_i
+// Subtraction: (a - b)_i = a_i - b_i
+// Scalar Multiplication: (ca)_i = c * a_i
+// Dot Product: a · b = Σ a_i * b_i
+// Cross Product (3D): (a × b)_1 = a_2b_3 - a_3b_2, (a × b)_2 = a_3b_1 - a_1b_3, (a × b)_3 = a_1b_2 - a_2b_1
+// Tensor Product: (a ⊗ b)_ij = a_i * b_j
+// Matrices:
+// Addition: (A + B)_ij = A_ij + B_ij
+// Subtraction: (A - B)_ij = A_ij - B_ij
+// Scalar Multiplication: (cA)_ij = c * A_ij
+// Matrix Multiplication: (AB)_ij = Σ A_ik * B_kj
+// Transpose: (A^T)_ij = A_ji
+// Inverse: AA^(-1) = A^(-1)A = I
+// Trace: tr(A) = Σ A_ii
+// Determinant: det(A)
+// Tensors:
+// Addition: (A + B)_i1i2...in = A_i1i2...in + B_i1i2...in
+// Subtraction: (A - B)_i1i2...in = A_i1i2...in - B_i1i2...in
+// Scalar Multiplication: (cA)_i1i2...in = c * A_i1i2...in
+// Hadamard Product: (A ⊙ B)_i1i2...in = A_i1i2...in * B_i1i2...in
+// Tensor Product: (A ⊗ B)_i1...in,j1...jm = A_i1...in * B_j1...jm
+// Transpose: (A^T)_i1...ik...in = A_i1...in...ik
+// Contraction: Σ A_i1...ik...in
+// There is also broadcasting between different shapes to consider.
+
 // Scalar arithmetic operations
 
 /// Implements scalar addition for Dimensional arrays.
@@ -301,6 +338,8 @@ where
 // TODO How much are these helper abstractions really helping?
 // Seems like .zip .map etc should do it without these.
 // We don't want bloat, we want a razor sharp and performant tool.
+// We can likely create a map/zip/collect implementation or override
+// to make this better.
 
 impl<T, S, const N: usize> Dimensional<T, S, N>
 where

@@ -261,7 +261,7 @@ where
     }
 }
 
-// Specific implementation for 2D arrays
+// Specific implementations for 2D arrays
 impl<T: Num + Copy, S> Dimensional<T, S, 2>
 where
     S: DimensionalStorage<T, 2>,
