@@ -48,11 +48,43 @@ fn bench_dimensional_array_mutable_indexing(c: &mut Criterion) {
     });
 }
 
+fn bench_matrix_multiplication(c: &mut Criterion) {
+    let shape1 = [100, 200];
+    let shape2 = [200, 100];
+    let m1 = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape1);
+    let m2 = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape2);
+
+    c.bench_function("matrix_multiplication", |b| {
+        b.iter(|| m1.mat_mul(&m2))
+    });
+}
+
+fn bench_matrix_transpose(c: &mut Criterion) {
+    let shape = [1000, 1000];
+    let m = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape);
+
+    c.bench_function("matrix_transpose", |b| {
+        b.iter(|| m.transpose())
+    });
+}
+
+fn bench_matrix_trace(c: &mut Criterion) {
+    let shape = [1000, 1000];
+    let m = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape);
+
+    c.bench_function("matrix_trace", |b| {
+        b.iter(|| m.trace())
+    });
+}
+
 criterion_group!(
     benches,
     bench_dimensional_array_creation_zeros,
     bench_dimensional_array_creation_ones,
     bench_dimensional_array_indexing,
-    bench_dimensional_array_mutable_indexing
+    bench_dimensional_array_mutable_indexing,
+    bench_matrix_multiplication,
+    bench_matrix_transpose,
+    bench_matrix_trace
 );
 criterion_main!(benches);
