@@ -65,7 +65,7 @@ where
 }
 
 /// An iterator over the elements of the transpose of a Dimensional array.
-/// 
+///
 /// This struct is created by the `iter_transpose` method on Dimensional
 /// to give access to row major elements of the transpose. Since we want
 /// transposition to be out of place, not much sense in making a mutable
@@ -93,7 +93,9 @@ where
         }
 
         // Transpose the current index
-        let transposed_index: [usize; N] = self.current_index.iter()
+        let transposed_index: [usize; N] = self
+            .current_index
+            .iter()
             .enumerate()
             .map(|(i, _)| self.current_index[N - 1 - i])
             .collect::<Vec<_>>()
@@ -247,9 +249,9 @@ where
 
     /// Returns an iterator over the eleents of the transposed array
     /// The iterator yields all items in the transposed array in row-major order.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use dimensionals::{Dimensional, vector, matrix, LinearArrayStorage};
     /// let v = vector![1, 2, 3, 4, 5];
@@ -264,13 +266,13 @@ where
     /// assert_eq!(iter.next(), Some(&2));
     /// assert_eq!(iter.next(), Some(&4));
     /// assert_eq!(iter.next(), None);
-    /// 
+    ///
     /// ```
-    pub fn iter_transpose(&self) -> DimensionalTransposeIter<T, S, N>{
+    pub fn iter_transpose(&self) -> DimensionalTransposeIter<T, S, N> {
         let len = self.len();
         DimensionalTransposeIter {
             dimensional: self,
-            current_index: [0;N],
+            current_index: [0; N],
             remaining: len,
         }
     }
@@ -306,7 +308,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{matrix, storage::LinearArrayStorage, Dimensional, vector};
+    use crate::{matrix, storage::LinearArrayStorage, vector, Dimensional};
 
     // ... (previous tests remain unchanged)
 
@@ -321,9 +323,8 @@ mod tests {
         assert_eq!(iter.next(), None);
     }
 
-
     #[test]
-    fn test_iter_transpose(){
+    fn test_iter_transpose() {
         let v = vector![1, 2, 3, 4, 5];
         let mut iter = v.iter_transpose();
         assert_eq!(iter.next(), Some(&1));
@@ -336,6 +337,5 @@ mod tests {
         assert_eq!(iter.next(), Some(&2));
         assert_eq!(iter.next(), Some(&4));
         assert_eq!(iter.next(), None);
-
     }
 }

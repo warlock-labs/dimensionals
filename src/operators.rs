@@ -1,7 +1,7 @@
 use crate::{storage::DimensionalStorage, Dimensional, LinearArrayStorage};
 use num_traits::Num;
 use std::ops::{
-    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
 /// Implements indexing operations for Dimensional arrays.
@@ -213,11 +213,10 @@ where
 }
 
 ///Implements matrix multiplication for 2-Dimensional arrays
-impl<T:Num + Copy + std::iter::Sum, S,> Dimensional<T, S, 2>
+impl<T: Num + Copy + std::iter::Sum, S> Dimensional<T, S, 2>
 where
-    S: DimensionalStorage<T,2>,
+    S: DimensionalStorage<T, 2>,
 {
-    
     pub fn matmul(&self, rhs: &Self) -> Dimensional<T, S, 2> {
         assert_eq!(
             self.shape()[1],
@@ -234,23 +233,29 @@ where
         // given below
         let shape = [m, k];
         let r: Vec<T> = (0..m)
-        .flat_map(|i| {
-            (0..k).map(move |j| {
-                (0..n)
-                    .map(|x| {
-                        let raveled = Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(&[i, x], &self.shape());
-                        let raveled_rhs = Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(&[x, j], &rhs.shape());
-                        self.as_slice()[raveled] * rhs.as_slice()[raveled_rhs]
-                    })
-                    .sum()
+            .flat_map(|i| {
+                (0..k).map(move |j| {
+                    (0..n)
+                        .map(|x| {
+                            let raveled =
+                                Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(
+                                    &[i, x],
+                                    &self.shape(),
+                                );
+                            let raveled_rhs =
+                                Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(
+                                    &[x, j],
+                                    &rhs.shape(),
+                                );
+                            self.as_slice()[raveled] * rhs.as_slice()[raveled_rhs]
+                        })
+                        .sum()
+                })
             })
-        })
-        .collect();
-        Dimensional::from_fn(shape, |[i, j]| r[k*i+j])
-        
+            .collect();
+        Dimensional::from_fn(shape, |[i, j]| r[k * i + j])
     }
 }
-
 
 // Assignment operations
 
@@ -530,8 +535,7 @@ mod tests {
         m3 *= &m2;
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
 
-        assert_eq!(m1.matmul(&m2), matrix![[19, 22],[43, 50]]);
-
+        assert_eq!(m1.matmul(&m2), matrix![[19, 22], [43, 50]]);
 
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
     }
