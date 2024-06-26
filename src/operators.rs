@@ -228,24 +228,26 @@ where
         let n = self.shape()[1];
         let k = rhs.shape()[1];
 
+        // given combination of dimensions, and the fact that current built in
+        // iterators and mappings only iterate pairwise with identical indices,
+        // something more custom is needed. naive algorithm with for looping
+        // given below
         let shape = [m, k];
-
-        let mut retval: Dimensional<T, S, 2> = Dimensional::zeros(shape); 
-
-        for i in 0..m {
-            for j in 0..k {
-                let sum: T = (0..n).map(|x| {
-                    let raveled = Dimensional::<T, LinearArrayStorage<T,2>, 2>::ravel_index(&[i,x], &self.shape());
-                    let raveled_rhs = Dimensional::<T, LinearArrayStorage<T,2>, 2>::ravel_index(&[x,j], &rhs.shape());
-                    let a = self.as_slice()[raveled];
-                    let b = rhs.as_slice()[raveled_rhs];
-                    a*b
-                }).sum();
-                retval[[i,j]] = sum;
-            }
-        }
-        retval
-
+        let r: Vec<T> = (0..m)
+        .flat_map(|i| {
+            (0..k).map(move |j| {
+                (0..n)
+                    .map(|x| {
+                        let raveled = Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(&[i, x], &self.shape());
+                        let raveled_rhs = Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(&[x, j], &rhs.shape());
+                        self.as_slice()[raveled] * rhs.as_slice()[raveled_rhs]
+                    })
+                    .sum()
+            })
+        })
+        .collect();
+        Dimensional::from_fn(shape, |[i, j]| r[k*i+j])
+        
     }
 }
 
@@ -529,7 +531,7 @@ mod tests {
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
 
         assert_eq!(m1.matmul(&m2), matrix![[19, 22],[43, 50]]);
-        
+
 
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
     }
