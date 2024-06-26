@@ -212,6 +212,31 @@ where
     }
 }
 
+impl<T: Num + Copy + std::iter::Sum, S, const N: usize> Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    pub fn transpose(&self) -> Dimensional<T, S, N> {
+        let r: Vec<T> = self
+            .iter_transpose()
+            .enumerate()
+            .map(|(_, val)| *val)
+            .collect();
+        let new_shape: [usize; N] = self
+            .shape()
+            .iter()
+            .rev()
+            .copied()
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
+
+        Dimensional::from_fn(new_shape, |idxs: [usize; N]| {
+            r[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(&idxs, &new_shape)]
+        })
+    }
+}
+
 ///Implements matrix multiplication for 2-Dimensional arrays
 impl<T: Num + Copy + std::iter::Sum, S> Dimensional<T, S, 2>
 where
@@ -536,6 +561,8 @@ mod tests {
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
 
         assert_eq!(m1.matmul(&m2), matrix![[19, 22], [43, 50]]);
+
+        assert_eq!(m1.transpose(), matrix![[1, 3], [2, 4]])
 
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
     }
