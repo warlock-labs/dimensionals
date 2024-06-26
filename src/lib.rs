@@ -12,7 +12,7 @@
 //! - Scalar: A 0-dimensional object, or just the element of type `T` itself.
 //! - Vector: A 1-dimensional array of elements with the type `T`.
 //! - Matrix: A 2-dimensional array of elements with the type `T`.
-//! - Tensor: An `N`-dimensional array of elements with the type `T`, where N > 2.
+//! - Tensor: An `N`-dimensional array of elements with the type `T`, where `N` > 2.
 //!
 //! # Goals
 //!

@@ -49,7 +49,7 @@ where
 
 // TODO(These operators in general need an audit and correction)
 // for varying operations between scalars, vectors, matrices and tensors.
-// 
+//
 // Some will fit neatly into the rust operators
 // Some will need to be implemented as methods
 //
