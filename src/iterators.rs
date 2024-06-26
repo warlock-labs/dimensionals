@@ -64,6 +64,61 @@ where
 {
 }
 
+/// An iterator over the elements of the transpose of a Dimensional array.
+/// 
+/// This struct is created by the `iter_transpose` method on Dimensional
+/// to give access to row major elements of the transpose. Since we want
+/// transposition to be out of place, not much sense in making a mutable
+/// iterator for the moment.
+pub struct DimensionalTransposeIter<'a, T, S, const N: usize>
+where
+    T: Num + Copy,
+    S: DimensionalStorage<T, N>,
+{
+    dimensional: &'a Dimensional<T, S, N>,
+    current_index: [usize; N],
+    remaining: usize,
+}
+
+impl<'a, T, S, const N: usize> Iterator for DimensionalTransposeIter<'a, T, S, N>
+where
+    T: Num + Copy,
+    S: DimensionalStorage<T, N>,
+{
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.remaining == 0 {
+            return None;
+        }
+
+        // Transpose the current index
+        let transposed_index: [usize; N] = self.current_index.iter()
+            .enumerate()
+            .map(|(i, _)| self.current_index[N - 1 - i])
+            .collect::<Vec<_>>()
+            .try_into()
+            .expect("Failed to transpose index");
+
+        let result = &self.dimensional[transposed_index];
+
+        // Update the index for the next iteration
+        for i in (0..N).rev() {
+            self.current_index[i] += 1;
+            if self.current_index[i] < self.dimensional.shape()[N - 1 - i] {
+                break;
+            }
+            self.current_index[i] = 0;
+        }
+
+        self.remaining -= 1;
+        Some(result)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.remaining, Some(self.remaining))
+    }
+}
 /// A mutable iterator over the elements of a Dimensional array.
 ///
 /// This struct is created by the `iter_mut` method on Dimensional. It provides
@@ -188,6 +243,36 @@ where
             remaining: len,
         }
     }
+
+    /// Returns an iterator over the eleents of the transposed array
+    /// The iterator yields all items in the transposed array in row-major order.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use dimensionals::{Dimensional, vector, matrix, LinearArrayStorage};
+    /// let v = vector![1, 2, 3, 4, 5];
+    /// let mut iter = v.iter_transpose();
+    /// assert_eq!(iter.next(), Some(&1));
+    /// assert_eq!(iter.next(), Some(&2));
+
+    /// let m = matrix![[1, 2], [3, 4]];
+    /// let mut iter = m.iter_transpose();
+    /// assert_eq!(iter.next(), Some(&1));
+    /// assert_eq!(iter.next(), Some(&3));
+    /// assert_eq!(iter.next(), Some(&2));
+    /// assert_eq!(iter.next(), Some(&4));
+    /// assert_eq!(iter.next(), None);
+    /// 
+    /// ```
+    pub fn iter_transpose(&self) -> DimensionalTransposeIter<T, S, N>{
+        let len = self.len();
+        DimensionalTransposeIter {
+            dimensional: self,
+            current_index: [0;N],
+            remaining: len,
+        }
+    }
 }
 
 // TODO: Since these are consuming, do they really need a lifetime?
@@ -220,7 +305,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{matrix, storage::LinearArrayStorage, Dimensional};
+    use crate::{matrix, storage::LinearArrayStorage, Dimensional, vector};
 
     // ... (previous tests remain unchanged)
 
@@ -233,5 +318,23 @@ mod tests {
         assert_eq!(iter.next(), Some(&mut 3));
         assert_eq!(iter.next(), Some(&mut 4));
         assert_eq!(iter.next(), None);
+    }
+
+
+    #[test]
+    fn test_iter_transpose(){
+        let v = vector![1, 2, 3, 4, 5];
+        let mut iter = v.iter_transpose();
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), Some(&2));
+
+        let m = matrix![[1, 2], [3, 4]];
+        let mut iter = m.iter_transpose();
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), Some(&3));
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&4));
+        assert_eq!(iter.next(), None);
+
     }
 }
