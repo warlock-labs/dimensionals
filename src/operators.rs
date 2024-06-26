@@ -211,7 +211,22 @@ where
         self.zip_map(rhs, |a, b| a / b)
     }
 }
-
+impl<T: Num + Copy + std::iter::Sum, S, const N: usize> Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    pub fn trace(&self) -> T {
+        (0..*self.shape().iter().min().unwrap())
+            .map(|i| {
+                let idxs = [i; N];
+                self.as_slice()[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(
+                    &idxs,
+                    &self.shape(),
+                )]
+            })
+            .sum()
+    }
+}
 impl<T: Num + Copy + std::iter::Sum, S, const N: usize> Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
@@ -246,7 +261,7 @@ where
         assert_eq!(
             self.shape()[1],
             rhs.shape()[0],
-            "Requires matrices be of the shapes (MxN) % (NxK). Interior dimensions do not match."
+            "Interior dimensions must match for matrix multiplication"
         );
         let m = self.shape()[0];
         let n = self.shape()[1];
@@ -560,13 +575,31 @@ mod tests {
         m3 *= &m2;
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
 
-        assert_eq!(m1.matmul(&m2), matrix![[19, 22], [43, 50]]);
-
-        assert_eq!(m1.transpose(), matrix![[1, 3], [2, 4]])
-
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
     }
 
+    #[test]
+    fn test_matrix_specific_operations() {
+        let m1 = matrix![[1, 2], [3, 4]];
+        let m2 = matrix![[5, 6], [7, 8]];
+        let m3 = matrix![[1, 2, 3], [4, 5 ,6], [7, 8, 9], [10, 11, 12]];
+
+        assert_eq!(m1.matmul(&m2), matrix![[19, 22], [43, 50]]);
+
+        assert_eq!(m1.transpose(), matrix![[1, 3], [2, 4]]);
+
+        assert_eq!(m1.trace(), 5);
+        assert_eq!(m3.trace(), 15);
+
+    }
+
+    #[test]
+    #[should_panic(expected = "Interior dimensions must match for matrix multiplication")]
+    fn test_mismatched_matrix_mult(){
+        let m1 = matrix![[1, 2], [3, 4]];
+        let m3 = matrix![[1, 2, 3], [4, 5 ,6], [7, 8, 9], [10, 11, 12]];
+        let _ = m1.matmul(&m3);
+    }
     #[test]
     fn test_mixed_dimensional_operations() {
         let v = vector![1, 2, 3];
