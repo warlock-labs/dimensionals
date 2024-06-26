@@ -5,6 +5,8 @@
 use crate::{storage::DimensionalStorage, Dimensional};
 use num_traits::Num;
 
+// TODO: Parallel iterators
+
 /// An iterator over the elements of a Dimensional array.
 ///
 /// This struct is created by the `iter` method on Dimensional. It provides
@@ -32,6 +34,10 @@ where
         }
 
         let result = &self.dimensional[self.current_index];
+
+        // TODO: Actually iterate correctly here over an `N`-dimensional array
+        // with `N` axes each with a possibly different length.
+        // and determine iteration pattern
 
         // Update the index for the next iteration
         for i in (0..N).rev() {
@@ -86,6 +92,10 @@ where
 
         let index = self.current_index;
 
+        // TODO: Actually iterate correctly here over an `N`-dimensional array
+        // with `N` axes each with a possibly different length.
+        // and determine iteration pattern
+
         // Update the index for the next iteration
         for i in (0..N).rev() {
             self.current_index[i] += 1;
@@ -98,6 +108,7 @@ where
         self.remaining -= 1;
 
         let linear_index = Dimensional::<T, S, N>::ravel_index(&index, &self.dimensional.shape());
+        // TODO: We really don't want to use unsafe rust here
         // SAFETY: This is safe because we're returning a unique reference to each element,
         // and we're iterating over each element only once.
         // But what if we modify the array while iterating?
@@ -178,6 +189,8 @@ where
         }
     }
 }
+
+// TODO: Since these are consuming, do they really need a lifetime?
 
 impl<'a, T, S, const N: usize> IntoIterator for &'a Dimensional<T, S, N>
 where

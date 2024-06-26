@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 /// * `T`: The element type of the array. Must implement `Num` and `Copy`.
 /// * `S`: The storage backend for the array. Must implement `DimensionalStorage`.
 /// * `N`: The dimensionality of the array a `usize`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Copy)]
 pub struct Dimensional<T: Num + Copy, S, const N: usize>
 where
     S: DimensionalStorage<T, N>,
@@ -139,6 +139,8 @@ where
         }
     }
 
+    // TODO Seems like both of these could just use the shape already on the object
+
     /// Converts a linear index to a multidimensional index.
     ///
     /// # Arguments
@@ -178,6 +180,8 @@ where
             .fold(0, |acc, (&i, &s)| acc * s + i)
     }
 
+    // TODO what if any is the use case for jagged arrays?
+
     /// Returns the shape of the array.
     ///
     /// # Returns
@@ -195,6 +199,8 @@ where
     pub fn ndim(&self) -> usize {
         N
     }
+
+    // TODO seems like this could me memoized
 
     /// Returns the total number of elements in the array.
     ///
@@ -232,6 +238,8 @@ where
         self.shape[axis]
     }
 
+    // TODO Seems like there may need to be an abstraction layer here
+
     /// Returns a mutable slice of the underlying data.
     ///
     /// # Returns
@@ -240,6 +248,8 @@ where
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.storage.as_mut_slice()
     }
+
+    // TODO same story here, this seems pretty tightly coupled to the storage
 
     /// Returns an immutable slice of the underlying data.
     ///
@@ -251,10 +261,62 @@ where
     }
 }
 
+// Specific implementations for 2D arrays
+impl<T: Num + Copy, S> Dimensional<T, S, 2>
+where
+    S: DimensionalStorage<T, 2>,
+{
+    /// Creates a new identity array (square matrix with ones on the diagonal and zeros elsewhere).
+    ///
+    /// # Arguments
+    ///
+    /// * `n`: The size of the square matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dimensionals::{Dimensional, LinearArrayStorage};
+    ///
+    /// let eye: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::eye(3);
+    /// assert_eq!(eye.shape(), [3, 3]);
+    /// assert_eq!(eye[[0, 0]], 1);
+    /// assert_eq!(eye[[1, 1]], 1);
+    /// assert_eq!(eye[[2, 2]], 1);
+    /// assert_eq!(eye[[0, 1]], 0);
+    /// ```
+    pub fn eye(n: usize) -> Self {
+        Self::from_fn([n, n], |[i, j]| if i == j { T::one() } else { T::zero() })
+    }
+
+    /// Creates a new identity-like array with a specified value on the diagonal.
+    ///
+    /// # Arguments
+    ///
+    /// * `n`: The size of the square matrix.
+    /// * `value`: The value to place on the diagonal.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dimensionals::{Dimensional, LinearArrayStorage};
+    ///
+    /// let eye: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> = Dimensional::eye_value(3, 2.5);
+    /// assert_eq!(eye.shape(), [3, 3]);
+    /// assert_eq!(eye[[0, 0]], 2.5);
+    /// assert_eq!(eye[[1, 1]], 2.5);
+    /// assert_eq!(eye[[2, 2]], 2.5);
+    /// assert_eq!(eye[[0, 1]], 0.0);
+    /// ```
+    pub fn eye_value(n: usize, value: T) -> Self {
+        Self::from_fn([n, n], |[i, j]| if i == j { value } else { T::zero() })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::LinearArrayStorage;
+    use num_traits::FloatConst;
 
     #[test]
     fn test_zeros_and_ones() {
@@ -335,5 +397,73 @@ mod tests {
         }
 
         assert_eq!(array.as_slice(), &[10, 1, 2, 3, 4, 50]);
+    }
+
+    #[test]
+    fn test_eye() {
+        let eye: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::eye(3);
+
+        // Check shape
+        assert_eq!(eye.shape(), [3, 3]);
+
+        // Check diagonal elements
+        assert_eq!(eye[[0, 0]], 1);
+        assert_eq!(eye[[1, 1]], 1);
+        assert_eq!(eye[[2, 2]], 1);
+
+        // Check off-diagonal elements
+        assert_eq!(eye[[0, 1]], 0);
+        assert_eq!(eye[[0, 2]], 0);
+        assert_eq!(eye[[1, 0]], 0);
+        assert_eq!(eye[[1, 2]], 0);
+        assert_eq!(eye[[2, 0]], 0);
+        assert_eq!(eye[[2, 1]], 0);
+
+        // Check sum of all elements (should equal to the size of the matrix)
+        let sum: i32 = eye.as_slice().iter().sum();
+        assert_eq!(sum, 3);
+
+        // Test with a different size
+        let eye_4x4: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::eye(4);
+        assert_eq!(eye_4x4.shape(), [4, 4]);
+        assert_eq!(eye_4x4[[3, 3]], 1);
+        assert_eq!(eye_4x4[[0, 3]], 0);
+
+        // Test with a different type
+        let eye_float: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> = Dimensional::eye(2);
+        assert_eq!(eye_float[[0, 0]], 1.0);
+        assert_eq!(eye_float[[0, 1]], 0.0);
+        assert_eq!(eye_float[[1, 0]], 0.0);
+        assert_eq!(eye_float[[1, 1]], 1.0);
+    }
+
+    #[test]
+    fn test_eye_value() {
+        // Test with integer type
+        let eye_int: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::eye_value(3, 5);
+        assert_eq!(eye_int.shape(), [3, 3]);
+        assert_eq!(eye_int[[0, 0]], 5);
+        assert_eq!(eye_int[[1, 1]], 5);
+        assert_eq!(eye_int[[2, 2]], 5);
+        assert_eq!(eye_int[[0, 1]], 0);
+        assert_eq!(eye_int[[1, 2]], 0);
+
+        // Test with floating-point type
+        let eye_float: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> =
+            Dimensional::eye_value(2, f64::PI());
+        assert_eq!(eye_float.shape(), [2, 2]);
+        assert_eq!(eye_float[[0, 0]], f64::PI());
+        assert_eq!(eye_float[[1, 1]], f64::PI());
+        assert_eq!(eye_float[[0, 1]], 0.0);
+        assert_eq!(eye_float[[1, 0]], 0.0);
+
+        // Test with a negative value
+        let eye_neg: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+            Dimensional::eye_value(2, -1);
+        assert_eq!(eye_neg.shape(), [2, 2]);
+        assert_eq!(eye_neg[[0, 0]], -1);
+        assert_eq!(eye_neg[[1, 1]], -1);
+        assert_eq!(eye_neg[[0, 1]], 0);
+        assert_eq!(eye_neg[[1, 0]], 0);
     }
 }

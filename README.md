@@ -1,29 +1,21 @@
+# Dimensionals
+
 [![License](https://img.shields.io/crates/l/dimensionals)](https://choosealicense.com/licenses/mit/)
 [![Crates.io](https://img.shields.io/crates/v/dimensionals)](https://crates.io/crates/dimensionals)
 [![Docs](https://img.shields.io/crates/v/dimensionals?color=blue&label=docs)](https://docs.rs/dimensionals/)
 ![CI](https://github.com/warlock-labs/dimensionals/actions/workflows/CI.yml/badge.svg)
 
-# dimensionals
-
-Dimensionals is a Rust library for working with n-dimensional data. It provides
-a flexible and efficient multidimensional array implementation with a generic
-storage backend.
-
-## Motivations
-
-The key motivations behind Dimensionals are:
-
-- A concise, idiomatic Rust API that leverages Rust's type system and ownership model.
-- High performance through efficient memory layout and cache-friendly traversals.
-- Extensibility via a generic storage backend, allowing for custom storage strategies.
-- A foundation for a generic compute pipeline that can target GPUs and utilize SIMD instructions.
+Dimensionals is a Rust library for working with n-dimensional data. It provides a flexible and efficient multidimensional array implementation with a generic storage backend over generic number types.
 
 ## Features
 
-- Generic over an element type, number of dimensions, and storage backend
-- Iterators, slices, indexing, and other standard Rust traits
-- Ergonomic and idiomatic `std::ops` implementations for arithmetic operations
-- Convenient macros for vector and matrix creation
+- Generic over element type `T` (implementing `Num` and `Copy`), number of dimensions `N`, and storage backend `S`
+- Support for Scalar (0D), Vector (1D), Matrix (2D), and Tensor (N>2 D) types
+- Efficient `LinearArrayStorage` backend with support for row-major and column-major layouts
+- Iterators (immutable and mutable) for efficient traversal
+- Indexing and slicing operations
+- Arithmetic operations (element-wise and scalar) with operator overloading
+- Convenient macros for vector and matrix creation (`vector!` and `matrix!`)
 
 ## Usage
 
@@ -34,7 +26,7 @@ Add this to your `Cargo.toml`:
 dimensionals = "0.1.0"
 ```
 
-Then, use the crate in your Rust code:
+Here's a basic example of creating and using a matrix:
 
 ```rust
 use dimensionals::{matrix, Dimensional, LinearArrayStorage};
@@ -46,43 +38,74 @@ fn main() {
     ];
     assert_eq!(m[[0, 0]], 1);
     assert_eq!(m[[1, 1]], 5);
+
+    // Element-wise addition
+    let m2 = &m + &m;
+    assert_eq!(m2[[0, 0]], 2);
+    assert_eq!(m2[[1, 1]], 10);
+
+    // Scalar multiplication
+    let m3 = &m * 2;
+    assert_eq!(m3[[0, 0]], 2);
+    assert_eq!(m3[[1, 1]], 10);
+
+    // Iteration
+    for &value in m.iter() {
+        println!("{}", value);
+    }
 }
 ```
 
 For more examples and usage details, see the [API documentation](https://docs.rs/dimensionals).
 
+## Core Concepts
+
+- **Element type `T`**: The type of data stored in the array (must implement `Num` and `Copy`).
+- **Storage backend `S`**: The underlying storage mechanism for the array (must implement `DimensionalStorage`).
+- **Number of dimensions `N`**: The dimensionality of the array (const generic parameter).
+
+## Performance
+
+The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` and supports both row-major and column-major layouts. This provides good cache locality for traversals. The storage computes strides for efficient indexing.
+
 ## Roadmap
 
 The following features and improvements are planned for future releases:
 
-- Arithmetic operations for 1D and 2D arrays
-- SIMD support for improved performance on CPU.
-- GPU support for offloading computations to compatible GPUs.
-- Comprehensive scalar, vector, matrix, and tensor algebra operations.
-- Reshaping and appending operations for easy data manipulation.
-- Additional storage backends for optimized memory usage in various scenarios.
-- Integration with popular Rust scientific computing libraries.
-
-## Performance
-
-The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` and computes element indices on the fly. This
-provides good cache locality for traversals, but may not be optimal for sparse or very high dimensional arrays.
-
-Alternative storage backends can be implemented by defining a type that implements the `DimensionalStorage` trait.
+- [ * ] Basic N-dimensional array
+- [ * ] Basic indexing
+- [ * ] Basic iterators
+- [ * ] Basic arithmetic operations
+- [ * ] Basic slicing
+- [ * ] Use safe rust in indexing
+- [ * ] Support common arithmetic operations
+- [ * ] Use safe rust in arithmetic operations
+- [ ] Move shape data to type-system for compile-time known dimensions
+- [ ] Matrix multiplication
+- [ ] Use safe Rust in iterators (currently uses unsafe code)
+- [ ] Add tensor macro for creating higher-dimensional arrays
+- [ ] Remove the need for phantom data markers
+- [ ] Support reshaping, appending, and removing operations
+- [ ] Implement comprehensive linear algebra functions
+- [ ] Add support for common statistical functions
+- [ ] Implement geometric functions like Brownian motion
+- [ ] Add support for GPU offloading
+- [ ] Implement SIMD optimizations
+- [ ] Support Apache Arrow or safetensors storage backend
+- [ ] Integrate with Polars, plotly-rs, and argmin-rs
+- [ ] Add parallel processing support with Rayon
+- [ ] Implement feature flags for optional functionality
+- [ ] Support no_std environments
+- [ ] Add WebAssembly and WebGPU support
+- [ ] Implement support for SVM targets
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on
-the [GitHub repository](https://github.com/warlock-labs/dimensionals).
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests on the [GitHub repository](https://github.com/warlock-labs/dimensionals).
 
 ## License
 
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
-
-## Acknowledgements
-
-This project is inspired by and builds upon ideas from several existing multidimensional array libraries in Rust and
-other languages.
 
 ## Contact
 

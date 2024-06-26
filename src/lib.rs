@@ -12,7 +12,7 @@
 //! - Scalar: A 0-dimensional object, or just the element of type `T` itself.
 //! - Vector: A 1-dimensional array of elements with the type `T`.
 //! - Matrix: A 2-dimensional array of elements with the type `T`.
-//! - Tensor: An `N`-dimensional array of elements with the type `T`, where N > 2.
+//! - Tensor: An `N`-dimensional array of elements with the type `T`, where `N` > 2.
 //!
 //! # Goals
 //!
@@ -46,6 +46,7 @@
 //! assert_eq!(m[[1, 1]], 5.0);
 //! ```
 mod core;
+mod display;
 mod iterators;
 mod operators;
 mod storage;
