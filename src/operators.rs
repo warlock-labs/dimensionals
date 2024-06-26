@@ -211,44 +211,74 @@ where
         self.zip_map(rhs, |a, b| a / b)
     }
 }
+
+impl<T: Num + Copy + std::iter::Sum + std::fmt::Debug, S, const N: usize> Dimensional<T, S, N>
+where
+    S: DimensionalStorage<T, N>,
+{
+    pub fn block(&self, idxs: [usize; N], szs: [usize; N]) -> Dimensional<T, S, N> {
+        for (&i, &j) in self.shape().to_vec().iter().zip(szs.to_vec().iter()) {
+            assert!(
+                i >= j,
+                "Requested block sizes cannot be bigger than total number of indices {} {}", i, j
+            );
+        }
+
+        let mut retval: Dimensional<T, S, N> = Dimensional::zeros(szs);
+
+        let total_elements: usize = szs.iter().product();
+
+        let mut indices = vec![0; N];
+        let mut block_index: usize = 0;
+
+        while block_index < total_elements {
+            let mut mat_indices = idxs.to_vec();
+            for i in 0..N {
+                mat_indices[i] += indices[i];
+            }
+
+            let value = self.as_slice()[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(
+                &mat_indices
+                    .into_iter()
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap(),
+                &szs,
+            )];
+            retval
+                [Dimensional::<T, LinearArrayStorage<T, N>, N>::unravel_index(block_index, &szs)] =
+                value;
+
+            block_index += 1;
+            for i in (0..N).rev() {
+                indices[i] += 1;
+                if indices[i] < szs[i] {
+                    break;
+                } else {
+                    indices[i] = 0;
+                }
+            }
+        }
+        retval
+    }
+}
+
 impl<T: Num + Copy + std::iter::Sum, S, const N: usize> Dimensional<T, S, N>
 where
     S: DimensionalStorage<T, N>,
 {
     pub fn trace(&self) -> T {
         (0..*self.shape().iter().min().unwrap())
-            .map(|i| {
-                let idxs = [i; N];
-                self.as_slice()[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(
-                    &idxs,
-                    &self.shape(),
-                )]
-            })
-            .sum()
+            .fold(T::zero(), |sum, i| sum + self[[i;N]])
     }
 }
-impl<T: Num + Copy + std::iter::Sum, S, const N: usize> Dimensional<T, S, N>
+impl<T: Num + Copy + std::iter::Sum, S> Dimensional<T, S, 2>
 where
-    S: DimensionalStorage<T, N>,
+    S: DimensionalStorage<T, 2>,
 {
-    pub fn transpose(&self) -> Dimensional<T, S, N> {
-        let r: Vec<T> = self
-            .iter_transpose()
-            .enumerate()
-            .map(|(_, val)| *val)
-            .collect();
-        let new_shape: [usize; N] = self
-            .shape()
-            .iter()
-            .rev()
-            .copied()
-            .collect::<Vec<_>>()
-            .try_into()
-            .unwrap();
-
-        Dimensional::from_fn(new_shape, |idxs: [usize; N]| {
-            r[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(&idxs, &new_shape)]
-        })
+    pub fn transpose(&self) -> Dimensional<T, S, 2> {
+        let (rows, cols) = (self.shape()[1], self.shape()[0]);
+        Self::from_fn([rows, cols], |[i, j]| self[[j, i]])
     }
 }
 
@@ -263,37 +293,11 @@ where
             rhs.shape()[0],
             "Interior dimensions must match for matrix multiplication"
         );
-        let m = self.shape()[0];
-        let n = self.shape()[1];
-        let k = rhs.shape()[1];
+        let (rows, cols) = (self.shape()[0], rhs.shape()[1]);
 
-        // given combination of dimensions, and the fact that current built in
-        // iterators and mappings only iterate pairwise with identical indices,
-        // something more custom is needed. naive algorithm with for looping
-        // given below
-        let shape = [m, k];
-        let r: Vec<T> = (0..m)
-            .flat_map(|i| {
-                (0..k).map(move |j| {
-                    (0..n)
-                        .map(|x| {
-                            let raveled =
-                                Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(
-                                    &[i, x],
-                                    &self.shape(),
-                                );
-                            let raveled_rhs =
-                                Dimensional::<T, LinearArrayStorage<T, 2>, 2>::ravel_index(
-                                    &[x, j],
-                                    &rhs.shape(),
-                                );
-                            self.as_slice()[raveled] * rhs.as_slice()[raveled_rhs]
-                        })
-                        .sum()
-                })
-            })
-            .collect();
-        Dimensional::from_fn(shape, |[i, j]| r[k * i + j])
+        Self::from_fn([rows, cols], |[i, j]| {
+            (0..self.shape()[1]).fold(T::zero(), |sum, k| sum + self[[i, k]] * rhs[[k, j]])
+        })
     }
 }
 
@@ -579,10 +583,20 @@ mod tests {
     }
 
     #[test]
+    fn test_matrix_blocking(){
+        let m1 = matrix![[1, 2], [3, 4]];
+        let m2 = matrix![[1, 2, 3, 4,   5,  6], 
+                                                                     [7, 8, 9, 10, 11, 12]];
+
+        assert_eq!(m1.block([0, 0], [1, 2]), matrix![[1, 2]]);
+        assert_eq!(m1.block([0,0], m1.shape()), m1);
+        assert_eq!(m2.block([0, 1], [2, 4]), matrix![[2, 3, 4, 5],[8, 9, 10, 11]]);
+    }
+    #[test]
     fn test_matrix_specific_operations() {
         let m1 = matrix![[1, 2], [3, 4]];
         let m2 = matrix![[5, 6], [7, 8]];
-        let m3 = matrix![[1, 2, 3], [4, 5 ,6], [7, 8, 9], [10, 11, 12]];
+        let m3 = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]];
 
         assert_eq!(m1.matmul(&m2), matrix![[19, 22], [43, 50]]);
 
@@ -590,14 +604,13 @@ mod tests {
 
         assert_eq!(m1.trace(), 5);
         assert_eq!(m3.trace(), 15);
-
     }
 
     #[test]
     #[should_panic(expected = "Interior dimensions must match for matrix multiplication")]
-    fn test_mismatched_matrix_mult(){
+    fn test_mismatched_matrix_mult() {
         let m1 = matrix![[1, 2], [3, 4]];
-        let m3 = matrix![[1, 2, 3], [4, 5 ,6], [7, 8, 9], [10, 11, 12]];
+        let m3 = matrix![[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]];
         let _ = m1.matmul(&m3);
     }
     #[test]
