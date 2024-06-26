@@ -119,6 +119,7 @@ where
         (self.remaining, Some(self.remaining))
     }
 }
+
 /// A mutable iterator over the elements of a Dimensional array.
 ///
 /// This struct is created by the `iter_mut` method on Dimensional. It provides

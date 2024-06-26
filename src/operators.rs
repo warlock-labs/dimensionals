@@ -1,7 +1,7 @@
-use crate::{storage::DimensionalStorage, Dimensional};
+use crate::{storage::DimensionalStorage, Dimensional, LinearArrayStorage};
 use num_traits::Num;
 use std::ops::{
-    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign
 };
 
 /// Implements indexing operations for Dimensional arrays.
@@ -211,6 +211,44 @@ where
         self.zip_map(rhs, |a, b| a / b)
     }
 }
+
+///Implements matrix multiplication for 2-Dimensional arrays
+impl<T:Num + Copy + std::iter::Sum, S,> Dimensional<T, S, 2>
+where
+    S: DimensionalStorage<T,2>,
+{
+    
+    pub fn matmul(&self, rhs: &Self) -> Dimensional<T, S, 2> {
+        assert_eq!(
+            self.shape()[1],
+            rhs.shape()[0],
+            "Requires matrices be of the shapes (MxN) % (NxK). Interior dimensions do not match."
+        );
+        let m = self.shape()[0];
+        let n = self.shape()[1];
+        let k = rhs.shape()[1];
+
+        let shape = [m, k];
+
+        let mut retval: Dimensional<T, S, 2> = Dimensional::zeros(shape); 
+
+        for i in 0..m {
+            for j in 0..k {
+                let sum: T = (0..n).map(|x| {
+                    let raveled = Dimensional::<T, LinearArrayStorage<T,2>, 2>::ravel_index(&[i,x], &self.shape());
+                    let raveled_rhs = Dimensional::<T, LinearArrayStorage<T,2>, 2>::ravel_index(&[x,j], &rhs.shape());
+                    let a = self.as_slice()[raveled];
+                    let b = rhs.as_slice()[raveled_rhs];
+                    a*b
+                }).sum();
+                retval[[i,j]] = sum;
+            }
+        }
+        retval
+
+    }
+}
+
 
 // Assignment operations
 
@@ -489,6 +527,9 @@ mod tests {
 
         m3 *= &m2;
         assert_eq!(m3, matrix![[5, 12], [21, 32]]);
+
+        assert_eq!(m1.matmul(&m2), matrix![[19, 22],[43, 50]]);
+        
 
         // Note: We don't test m3 /= m2 here because it would result in a matrix of zeros due to integer division
     }
