@@ -316,6 +316,7 @@ where
 mod tests {
     use super::*;
     use crate::LinearArrayStorage;
+    use num_traits::FloatConst;
 
     #[test]
     fn test_zeros_and_ones() {
@@ -449,10 +450,10 @@ mod tests {
 
         // Test with floating-point type
         let eye_float: Dimensional<f64, LinearArrayStorage<f64, 2>, 2> =
-            Dimensional::eye_value(2, 3.14);
+            Dimensional::eye_value(2, f64::PI());
         assert_eq!(eye_float.shape(), [2, 2]);
-        assert_eq!(eye_float[[0, 0]], 3.14);
-        assert_eq!(eye_float[[1, 1]], 3.14);
+        assert_eq!(eye_float[[0, 0]], f64::PI());
+        assert_eq!(eye_float[[1, 1]], f64::PI());
         assert_eq!(eye_float[[0, 1]], 0.0);
         assert_eq!(eye_float[[1, 0]], 0.0);
 
