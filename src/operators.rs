@@ -233,6 +233,7 @@ where
     }
 }
 
+// TODO Find a zero copy way to do transpose.
 /// Implements matrix transpose for Dimensional arrays.
 impl<T: Num + Copy, S> Dimensional<T, S, 2>
 where
