@@ -1,4 +1,4 @@
-use crate::{storage::DimensionalStorage, Dimensional, LinearArrayStorage};
+use crate::{storage::DimensionalStorage, Dimensional};
 use num_traits::Num;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
@@ -220,7 +220,9 @@ where
         for (&i, &j) in self.shape().to_vec().iter().zip(szs.to_vec().iter()) {
             assert!(
                 i >= j,
-                "Requested block sizes cannot be bigger than total number of indices {} {}", i, j
+                "Requested block sizes cannot be bigger than total number of indices {} {}",
+                i,
+                j
             );
         }
 
@@ -228,34 +230,24 @@ where
 
         let total_elements: usize = szs.iter().product();
 
-        let mut indices = vec![0; N];
+        let mut target_index = [0; N];
         let mut block_index: usize = 0;
 
         while block_index < total_elements {
-            let mut mat_indices = idxs.to_vec();
+            let mut source_index = idxs;
             for i in 0..N {
-                mat_indices[i] += indices[i];
+                source_index[i] += target_index[i];
             }
 
-            let value = self.as_slice()[Dimensional::<T, LinearArrayStorage<T, N>, N>::ravel_index(
-                &mat_indices
-                    .into_iter()
-                    .collect::<Vec<_>>()
-                    .try_into()
-                    .unwrap(),
-                &szs,
-            )];
-            retval
-                [Dimensional::<T, LinearArrayStorage<T, N>, N>::unravel_index(block_index, &szs)] =
-                value;
+            retval[target_index] = self[source_index];
 
             block_index += 1;
             for i in (0..N).rev() {
-                indices[i] += 1;
-                if indices[i] < szs[i] {
+                target_index[i] += 1;
+                if target_index[i] < szs[i] {
                     break;
                 } else {
-                    indices[i] = 0;
+                    target_index[i] = 0;
                 }
             }
         }
@@ -268,8 +260,7 @@ where
     S: DimensionalStorage<T, N>,
 {
     pub fn trace(&self) -> T {
-        (0..*self.shape().iter().min().unwrap())
-            .fold(T::zero(), |sum, i| sum + self[[i;N]])
+        (0..*self.shape().iter().min().unwrap()).fold(T::zero(), |sum, i| sum + self[[i; N]])
     }
 }
 impl<T: Num + Copy + std::iter::Sum, S> Dimensional<T, S, 2>
@@ -583,14 +574,17 @@ mod tests {
     }
 
     #[test]
-    fn test_matrix_blocking(){
+    fn test_matrix_blocking() {
         let m1 = matrix![[1, 2], [3, 4]];
-        let m2 = matrix![[1, 2, 3, 4,   5,  6], 
-                                                                     [7, 8, 9, 10, 11, 12]];
+        let m2 = matrix![[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]];
 
         assert_eq!(m1.block([0, 0], [1, 2]), matrix![[1, 2]]);
-        assert_eq!(m1.block([0,0], m1.shape()), m1);
-        assert_eq!(m2.block([0, 1], [2, 4]), matrix![[2, 3, 4, 5],[8, 9, 10, 11]]);
+        assert_eq!(m1.block([0, 0], m1.shape()), m1);
+        assert_eq!(
+            m2.block([0, 1], [2, 4]),
+            matrix![[2, 3, 4, 5], [8, 9, 10, 11]]
+        );
+        assert_eq!(m2.block([1, 3], [1, 1]), matrix![[10]]);
     }
     #[test]
     fn test_matrix_specific_operations() {
