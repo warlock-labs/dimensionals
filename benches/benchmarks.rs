@@ -55,7 +55,7 @@ fn bench_matrix_multiplication(c: &mut Criterion) {
     let m2 = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape2);
 
     c.bench_function("matrix_multiplication", |b| {
-        b.iter(|| m1.mat_mul(&m2))
+        b.iter(|| m1.dot(&m2))
     });
 }
 

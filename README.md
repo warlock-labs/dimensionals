@@ -60,7 +60,7 @@ fn main() {
         [9, 10],
         [11, 12]
     ];
-    let product = m.mat_mul(&m4);
+    let product = m.dot(&m4);
     assert_eq!(product[[0, 0]], 58);
 }
 ```

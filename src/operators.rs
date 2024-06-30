@@ -220,7 +220,7 @@ where
     S: DimensionalStorage<T, 2>,
 {
     /// Multiplies two matrices.
-    pub fn mat_mul(&self, rhs: &Self) -> Self {
+    pub fn dot(&self, rhs: &Self) -> Self {
         assert_eq!(
             self.shape()[1], rhs.shape()[0],
             "Matrix dimensions must match for multiplication"
@@ -646,7 +646,7 @@ mod tests {
             [139, 154]
         ];
 
-        assert_eq!(m1.mat_mul(&m2), product);
+        assert_eq!(m1.dot(&m2), product);
     }
 
     #[test]
