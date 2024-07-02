@@ -19,6 +19,7 @@ where
     pub(crate) shape: [usize; N],
     pub(crate) storage: S,
     _marker: PhantomData<T>,
+    len: usize,
 }
 
 impl<T: Num + Copy, S, const N: usize> Dimensional<T, S, N>
@@ -42,10 +43,12 @@ where
     /// ```
     pub fn zeros(shape: [usize; N]) -> Self {
         let storage = S::zeros(shape);
+        let len = shape.iter().product();
         Self {
             shape,
             storage,
             _marker: PhantomData,
+            len,
         }
     }
 
@@ -66,10 +69,12 @@ where
     /// ```
     pub fn ones(shape: [usize; N]) -> Self {
         let storage = S::ones(shape);
+        let len = shape.iter().product();
         Self {
             shape,
             storage,
             _marker: PhantomData,
+            len,
         }
     }
 
@@ -91,8 +96,9 @@ where
     /// assert_eq!(array.as_slice(), &[1, 2, 3, 4, 5, 6]);
     /// ```
     pub fn new(shape: [usize; N], storage: S) -> Self {
+        let len = shape.iter().product();
         assert_eq!(
-            shape.iter().product::<usize>(),
+            len,
             storage.as_slice().len(),
             "Storage size must match the product of shape dimensions"
         );
@@ -100,6 +106,7 @@ where
             shape,
             storage,
             _marker: PhantomData,
+            len,
         }
     }
 
@@ -124,12 +131,14 @@ where
     where
         F: Fn([usize; N]) -> T,
     {
+        let len = shape.iter().product();
         let data = (0..shape.iter().product::<usize>())
             .map(|i| {
                 let temp = Self {
                     shape,
                     storage: S::zeros(shape), // Temporary storage
                     _marker: PhantomData,
+                    len,
                 };
                 let index = temp.unravel_index(i);
                 f(index)
@@ -141,10 +150,9 @@ where
             shape,
             storage,
             _marker: PhantomData,
+            len,
         }
     }
-
-    // TODO Seems like both of these could just use the shape already on the object
 
     /// Converts a linear index to a multidimensional index.
     ///
@@ -203,15 +211,13 @@ where
         N
     }
 
-    // TODO seems like this could me memoized
-
     /// Returns the total number of elements in the array.
     ///
     /// # Returns
     ///
     /// The total number of elements as `usize`.
     pub fn len(&self) -> usize {
-        self.shape.iter().product()
+        self.len
     }
 
     /// Returns `true` if the array is empty.
