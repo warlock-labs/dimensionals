@@ -83,7 +83,7 @@ where
                 let mut index_array = [0; N];
                 index_array[0] = i;
                 index_array[1] = j;
-                let index = Self::ravel_index(&index_array, &shape);
+                let index = self.ravel_index(&index_array);
                 // Check if a precision is specified in the formatter
                 if let Some(precision) = f.precision() {
                     write!(f, "{:.1$}", self.as_slice()[index], precision)?;

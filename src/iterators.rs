@@ -107,7 +107,7 @@ where
 
         self.remaining -= 1;
 
-        let linear_index = Dimensional::<T, S, N>::ravel_index(&index, &self.dimensional.shape());
+        let linear_index = self.dimensional.ravel_index(&index);
         // TODO: We really don't want to use unsafe rust here
         // SAFETY: This is safe because we're returning a unique reference to each element,
         // and we're iterating over each element only once.

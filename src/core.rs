@@ -126,7 +126,12 @@ where
     {
         let data = (0..shape.iter().product::<usize>())
             .map(|i| {
-                let index = Self::unravel_index(i, &shape);
+                let temp = Self {
+                    shape,
+                    storage: S::zeros(shape), // Temporary storage
+                    _marker: PhantomData,
+                };
+                let index = temp.unravel_index(i);
                 f(index)
             })
             .collect();
@@ -146,18 +151,17 @@ where
     /// # Arguments
     ///
     /// * `index`: The linear index.
-    /// * `shape`: The shape of the array.
     ///
     /// # Returns
     ///
     /// A multidimensional index as an array of `usize`.
-    pub fn unravel_index(index: usize, shape: &[usize; N]) -> [usize; N] {
+    pub fn unravel_index(&self, index: usize) -> [usize; N] {
         let mut index = index;
         let mut unraveled = [0; N];
 
         for i in (0..N).rev() {
-            unraveled[i] = index % shape[i];
-            index /= shape[i];
+            unraveled[i] = index % self.shape[i];
+            index /= self.shape[i];
         }
 
         unraveled
@@ -168,15 +172,14 @@ where
     /// # Arguments
     ///
     /// * `indices`: The multidimensional index.
-    /// * `shape`: The shape of the array.
     ///
     /// # Returns
     ///
     /// A linear index as `usize`.
-    pub fn ravel_index(indices: &[usize; N], shape: &[usize; N]) -> usize {
+    pub fn ravel_index(&self, indices: &[usize; N]) -> usize {
         indices
             .iter()
-            .zip(shape.iter())
+            .zip(self.shape.iter())
             .fold(0, |acc, (&i, &s)| acc * s + i)
     }
 
@@ -355,11 +358,10 @@ mod tests {
     #[test]
     fn test_unravel_and_ravel_index() {
         let shape = [2, 3, 4];
+        let array = Dimensional::<i32, LinearArrayStorage<i32, 3>, 3>::zeros(shape);
         for i in 0..24 {
-            let unraveled =
-                Dimensional::<i32, LinearArrayStorage<i32, 3>, 3>::unravel_index(i, &shape);
-            let raveled =
-                Dimensional::<i32, LinearArrayStorage<i32, 3>, 3>::ravel_index(&unraveled, &shape);
+            let unraveled = array.unravel_index(i);
+            let raveled = array.ravel_index(&unraveled);
             assert_eq!(i, raveled);
         }
     }
