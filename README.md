@@ -53,6 +53,15 @@ fn main() {
     for &value in m.iter() {
         println!("{}", value);
     }
+
+    // Matrix multiplication
+    let m4: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![
+        [7, 8],
+        [9, 10],
+        [11, 12]
+    ];
+    let product = m.dot(&m4);
+    assert_eq!(product[[0, 0]], 58);
 }
 ```
 
