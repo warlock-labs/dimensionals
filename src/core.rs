@@ -18,7 +18,6 @@ where
 {
     pub(crate) shape: [usize; N],
     pub(crate) storage: S,
-    pub(crate) len: usize,
     _marker: PhantomData<T>,
 }
 
@@ -43,12 +42,10 @@ where
     /// ```
     pub fn zeros(shape: [usize; N]) -> Self {
         let storage = S::zeros(shape);
-        let len = shape.iter().product();
 
         Self {
             shape,
             storage,
-            len,
             _marker: PhantomData,
         }
     }
@@ -70,12 +67,10 @@ where
     /// ```
     pub fn ones(shape: [usize; N]) -> Self {
         let storage = S::ones(shape);
-        let len = shape.iter().product();
 
         Self {
             shape,
             storage,
-            len,
             _marker: PhantomData,
         }
     }
@@ -103,11 +98,9 @@ where
             storage.as_slice().len(),
             "Storage size must match the product of shape dimensions"
         );
-        let len = shape.iter().product();
         Self {
             shape,
             storage,
-            len,
             _marker: PhantomData,
         }
     }
@@ -141,12 +134,10 @@ where
             .collect();
 
         let storage = S::from_vec(shape, data);
-        let len = shape.iter().product();
 
         Self {
             shape,
             storage,
-            len,
             _marker: PhantomData,
         }
     }
@@ -218,7 +209,7 @@ where
     ///
     /// The total number of elements as `usize`.
     pub fn len(&self) -> usize {
-        self.len
+        self.storage.len()
     }
 
     /// Returns `true` if the array is empty.
@@ -227,7 +218,7 @@ where
     ///
     /// A boolean indicating whether the array is empty.
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.storage.len() == 0
     }
 
     /// Returns the length of the array along a given axis.

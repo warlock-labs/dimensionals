@@ -35,6 +35,9 @@ pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
     /// * `data`: The data to initialize the array with.
     fn from_vec(shape: [usize; N], data: Vec<T>) -> Self;
 
+    /// Returns the total number of elements in the storage.
+    fn len(&self) -> usize;
+
     /// Returns a mutable slice of the underlying data from storage.
     fn as_mut_slice(&mut self) -> &mut [T];
 
@@ -66,6 +69,7 @@ pub struct LinearArrayStorage<T: Num + Copy, const N: usize> {
     shape: [usize; N],
     layout: LinearArrayLayout,
     strides: [usize; N],
+    len: usize,
 }
 
 impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
@@ -141,11 +145,13 @@ impl<T: Num + Copy, const N: usize> LinearArrayStorage<T, N> {
             "Data length must match the product of shape dimensions"
         );
         let strides = Self::compute_strides(&shape, &layout);
+        let len = data.len();
         Self {
             data,
             shape,
             layout,
             strides,
+            len,
         }
     }
 
@@ -194,6 +200,10 @@ impl<T: Num + Copy, const N: usize> DimensionalStorage<T, N> for LinearArrayStor
 
     fn from_vec(shape: [usize; N], data: Vec<T>) -> Self {
         LinearArrayStorage::new(shape, data, LinearArrayLayout::RowMajor)
+    }
+
+    fn len(&self) -> usize {
+        self.len
     }
 
     fn as_mut_slice(&mut self) -> &mut [T] {
