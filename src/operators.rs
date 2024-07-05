@@ -212,6 +212,52 @@ where
     }
 }
 
+// Matrix operations
+
+/// Implements matrix multiplication for Dimensional arrays.
+impl<T: Num + Copy, S> Dimensional<T, S, 2>
+where
+    S: DimensionalStorage<T, 2>,
+{
+    /// Multiplies two matrices.
+    pub fn dot(&self, rhs: &Self) -> Self {
+        assert_eq!(
+            self.shape()[1], rhs.shape()[0],
+            "Matrix dimensions must match for multiplication"
+        );
+        let (rows, cols) = (self.shape()[0], rhs.shape()[1]);
+
+        Self::from_fn([rows, cols], |[i, j]| {
+            (0..self.shape()[1]).fold(T::zero(), |sum, k| sum + self[[i, k]] * rhs[[k, j]])
+        })
+    }
+}
+
+// TODO Find a zero copy way to do transpose.
+/// Implements matrix transpose for Dimensional arrays.
+impl<T: Num + Copy, S> Dimensional<T, S, 2>
+where
+    S: DimensionalStorage<T, 2>,
+{
+    /// Transposes a matrix.
+    pub fn transpose(&self) -> Self {
+        let (rows, cols) = (self.shape()[1], self.shape()[0]);
+        Self::from_fn([rows, cols], |[i, j]| self[[j, i]])
+    }
+}
+
+/// Implements matrix trace for Dimensional arrays.
+impl<T: Num + Copy, S> Dimensional<T, S, 2>
+where
+    S: DimensionalStorage<T, 2>,
+{
+    /// Computes the trace of a matrix.
+    pub fn trace(&self) -> T {
+        assert_eq!(self.shape()[0], self.shape()[1], "Matrix must be square to compute trace");
+        (0..self.shape()[0]).fold(T::zero(), |sum, i| sum + self[[i, i]])
+    }
+}
+
 // Assignment operations
 
 /// Implements scalar addition assignment for Dimensional arrays.
@@ -577,5 +623,42 @@ mod tests {
 
         let product = &a1 * &a2;
         assert_eq!(product.as_slice(), &[8, 14, 18, 20, 20, 18, 14, 8]);
+    }
+
+    #[test]
+    fn test_matrix_multiplication() {
+        // Define a 2x3 matrix
+        let m1 = matrix![
+            [1, 2, 3],
+            [4, 5, 6]
+        ];
+
+        // Define a 3x2 matrix
+        let m2 = matrix![
+            [7, 8],
+            [9, 10],
+            [11, 12]
+        ];
+
+        // Expected 2x2 product matrix
+        let product = matrix![
+            [58, 64],
+            [139, 154]
+        ];
+
+        assert_eq!(m1.dot(&m2), product);
+    }
+
+    #[test]
+    fn test_matrix_transpose() {
+        let m = matrix![[1, 2, 3], [4, 5, 6]];
+        let m_t = matrix![[1, 4], [2, 5], [3, 6]];
+        assert_eq!(m.transpose(), m_t);
+    }
+
+    #[test]
+    fn test_matrix_trace() {
+        let m = matrix![[1, 2], [3, 4]];
+        assert_eq!(m.trace(), 5);
     }
 }
