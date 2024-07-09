@@ -92,22 +92,19 @@ where
 
         let index = self.current_index;
 
-        // TODO: Actually iterate correctly here over an `N`-dimensional array
-        // with `N` axes each with a possibly different length.
-        // and determine iteration pattern
+        self.remaining -= 1;
 
         // Update the index for the next iteration
         for i in (0..N).rev() {
-            self.current_index[i] += 1;
-            if self.current_index[i] < self.dimensional.shape()[i] {
+            if self.current_index[i] < self.dimensional.shape()[i] - 1 {
+                self.current_index[i] += 1;
                 break;
+            } else {
+                self.current_index[i] = 0;
             }
-            self.current_index[i] = 0;
         }
 
-        self.remaining -= 1;
-
-        let linear_index = Dimensional::<T, S, N>::ravel_index(&index, &self.dimensional.shape());
+        let linear_index = self.dimensional.ravel_index(&index);
         // TODO: We really don't want to use unsafe rust here
         // SAFETY: This is safe because we're returning a unique reference to each element,
         // and we're iterating over each element only once.
@@ -222,8 +219,6 @@ where
 mod tests {
     use crate::{matrix, storage::LinearArrayStorage, Dimensional};
 
-    // ... (previous tests remain unchanged)
-
     #[test]
     fn test_iter_mut_borrow() {
         let mut m = matrix![[1, 2], [3, 4]];
@@ -232,6 +227,147 @@ mod tests {
         assert_eq!(iter.next(), Some(&mut 2));
         assert_eq!(iter.next(), Some(&mut 3));
         assert_eq!(iter.next(), Some(&mut 4));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_next() {
+        let array_1d: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = Dimensional::zeros([5]);
+        let mut iter = array_1d.iter();
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_next_matrix() {
+        let array_2d: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::zeros([2, 3]);
+        let mut iter = array_2d.iter();
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_mut_next() {
+        let mut array_1d: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = Dimensional::zeros([5]);
+        let mut iter = array_1d.iter_mut();
+        if let Some(elem) = iter.next() {
+            *elem = 1;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 2;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 3;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 4;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 5;
+        }
+
+        let mut iter = array_1d.iter_mut();
+        assert_eq!(iter.next(), Some(&mut 1));
+        assert_eq!(iter.next(), Some(&mut 2));
+        assert_eq!(iter.next(), Some(&mut 3));
+        assert_eq!(iter.next(), Some(&mut 4));
+        assert_eq!(iter.next(), Some(&mut 5));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_mut_next_matrix() {
+        let mut array_2d: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+            Dimensional::zeros([2, 3]);
+        let mut iter = array_2d.iter_mut();
+        if let Some(elem) = iter.next() {
+            *elem = 1;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 2;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 3;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 4;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 5;
+        }
+        if let Some(elem) = iter.next() {
+            *elem = 6;
+        }
+
+        let mut iter = array_2d.iter_mut();
+        assert_eq!(iter.next(), Some(&mut 1));
+        assert_eq!(iter.next(), Some(&mut 2));
+        assert_eq!(iter.next(), Some(&mut 3));
+        assert_eq!(iter.next(), Some(&mut 4));
+        assert_eq!(iter.next(), Some(&mut 5));
+        assert_eq!(iter.next(), Some(&mut 6));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_empty() {
+        let array_empty: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = Dimensional::zeros([0]);
+        let mut iter = array_empty.iter();
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_mut_empty() {
+        let mut array_empty: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> =
+            Dimensional::zeros([0]);
+        let mut iter = array_empty.iter_mut();
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_high_dimensional() {
+        let array_3d: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> =
+            Dimensional::zeros([2, 3, 2]);
+        let mut iter = array_3d.iter();
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), Some(&0));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_iter_mut_high_dimensional() {
+        let mut array_3d: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> =
+            Dimensional::zeros([2, 3, 2]);
+        let mut iter = array_3d.iter_mut();
+        for i in 1..=12 {
+            if let Some(elem) = iter.next() {
+                *elem = i as i32;
+            }
+        }
+
+        let mut iter = array_3d.iter_mut();
+        for mut i in 1..=12 {
+            assert_eq!(iter.next(), Some(&mut i));
+        }
         assert_eq!(iter.next(), None);
     }
 }
