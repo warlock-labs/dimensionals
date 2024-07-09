@@ -126,41 +126,39 @@ where
     where
         F: Fn([usize; N]) -> T,
     {
-        let data = (0..shape.iter().product::<usize>())
-            .map(|i| {
-                let index = Self::unravel_index(i, &shape);
-                f(index)
-            })
-            .collect();
-
-        let storage = S::from_vec(shape, data);
-
-        Self {
+        // Initialize with zeros
+        let storage = S::zeros(shape);
+        let mut array = Self {
             shape,
             storage,
             _marker: PhantomData,
-        }
-    }
+        };
 
-    // TODO Seems like both of these could just use the shape already on the object
+        // Unravel index and apply f
+        for i in 0..array.len() {
+            let index = array.unravel_index(i);
+            array.storage.as_mut_slice()[i] = f(index);
+        }
+
+        array
+    }
 
     /// Converts a linear index to a multidimensional index.
     ///
     /// # Arguments
     ///
     /// * `index`: The linear index.
-    /// * `shape`: The shape of the array.
     ///
     /// # Returns
     ///
     /// A multidimensional index as an array of `usize`.
-    pub fn unravel_index(index: usize, shape: &[usize; N]) -> [usize; N] {
+    pub fn unravel_index(&self, index: usize) -> [usize; N] {
         let mut index = index;
         let mut unraveled = [0; N];
 
         for i in (0..N).rev() {
-            unraveled[i] = index % shape[i];
-            index /= shape[i];
+            unraveled[i] = index % self.shape[i];
+            index /= self.shape[i];
         }
 
         unraveled
@@ -171,15 +169,14 @@ where
     /// # Arguments
     ///
     /// * `indices`: The multidimensional index.
-    /// * `shape`: The shape of the array.
     ///
     /// # Returns
     ///
     /// A linear index as `usize`.
-    pub fn ravel_index(indices: &[usize; N], shape: &[usize; N]) -> usize {
+    pub fn ravel_index(&self, indices: &[usize; N]) -> usize {
         indices
             .iter()
-            .zip(shape.iter())
+            .zip(self.shape.iter())
             .fold(0, |acc, (&i, &s)| acc * s + i)
     }
 
@@ -355,13 +352,31 @@ mod tests {
 
     #[test]
     fn test_unravel_and_ravel_index() {
-        let shape = [2, 3, 4];
+        let array: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> = Dimensional::zeros([2, 3, 4]);
         for i in 0..24 {
-            let unraveled =
-                Dimensional::<i32, LinearArrayStorage<i32, 3>, 3>::unravel_index(i, &shape);
-            let raveled =
-                Dimensional::<i32, LinearArrayStorage<i32, 3>, 3>::ravel_index(&unraveled, &shape);
+            let unraveled = array.unravel_index(i);
+            let raveled = array.ravel_index(&unraveled);
             assert_eq!(i, raveled);
+        }
+    }
+
+    #[test]
+    fn test_ravel_unravel_consistency() {
+        let array: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> = Dimensional::zeros([2, 3, 4]);
+
+        for i in 0..2 {
+            for j in 0..3 {
+                for k in 0..4 {
+                    let index = [i, j, k];
+                    let raveled = array.ravel_index(&index);
+                    let unraveled = array.unravel_index(raveled);
+                    assert_eq!(
+                        index, unraveled,
+                        "Ravel/unravel mismatch for index {:?}",
+                        index
+                    );
+                }
+            }
         }
     }
 
