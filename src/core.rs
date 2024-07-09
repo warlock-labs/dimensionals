@@ -42,6 +42,7 @@ where
     /// ```
     pub fn zeros(shape: [usize; N]) -> Self {
         let storage = S::zeros(shape);
+
         Self {
             shape,
             storage,
@@ -66,6 +67,7 @@ where
     /// ```
     pub fn ones(shape: [usize; N]) -> Self {
         let storage = S::ones(shape);
+
         Self {
             shape,
             storage,
@@ -132,6 +134,7 @@ where
             .collect();
 
         let storage = S::from_vec(shape, data);
+
         Self {
             shape,
             storage,
@@ -200,15 +203,13 @@ where
         N
     }
 
-    // TODO seems like this could me memoized
-
     /// Returns the total number of elements in the array.
     ///
     /// # Returns
     ///
     /// The total number of elements as `usize`.
     pub fn len(&self) -> usize {
-        self.shape.iter().product()
+        self.storage.len()
     }
 
     /// Returns `true` if the array is empty.
@@ -217,7 +218,7 @@ where
     ///
     /// A boolean indicating whether the array is empty.
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.storage.len() == 0
     }
 
     /// Returns the length of the array along a given axis.
@@ -465,5 +466,21 @@ mod tests {
         assert_eq!(eye_neg[[1, 1]], -1);
         assert_eq!(eye_neg[[0, 1]], 0);
         assert_eq!(eye_neg[[1, 0]], 0);
+    }
+
+    #[test]
+    fn test_len() {
+        let array_2d: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::zeros([2, 3]);
+        assert_eq!(array_2d.len(), 6);
+
+        let array_3d: Dimensional<i32, LinearArrayStorage<i32, 3>, 3> =
+            Dimensional::zeros([2, 3, 4]);
+        assert_eq!(array_3d.len(), 24);
+
+        let array_1d: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = Dimensional::zeros([5]);
+        assert_eq!(array_1d.len(), 5);
+
+        let array_empty: Dimensional<i32, LinearArrayStorage<i32, 1>, 1> = Dimensional::zeros([0]);
+        assert_eq!(array_empty.len(), 0);
     }
 }
