@@ -38,6 +38,11 @@ pub trait DimensionalStorage<T: Num + Copy, const N: usize>:
     /// Returns the total number of elements in the storage.
     fn len(&self) -> usize;
 
+    /// Checks if the storage is empty.
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Returns a mutable slice of the underlying data from storage.
     fn as_mut_slice(&mut self) -> &mut [T];
 

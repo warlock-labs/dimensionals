@@ -222,7 +222,8 @@ where
     /// Multiplies two matrices.
     pub fn dot(&self, rhs: &Self) -> Self {
         assert_eq!(
-            self.shape()[1], rhs.shape()[0],
+            self.shape()[1],
+            rhs.shape()[0],
             "Matrix dimensions must match for multiplication"
         );
         let (rows, cols) = (self.shape()[0], rhs.shape()[1]);
@@ -253,7 +254,11 @@ where
 {
     /// Computes the trace of a matrix.
     pub fn trace(&self) -> T {
-        assert_eq!(self.shape()[0], self.shape()[1], "Matrix must be square to compute trace");
+        assert_eq!(
+            self.shape()[0],
+            self.shape()[1],
+            "Matrix must be square to compute trace"
+        );
         (0..self.shape()[0]).fold(T::zero(), |sum, i| sum + self[[i, i]])
     }
 }
@@ -628,23 +633,13 @@ mod tests {
     #[test]
     fn test_matrix_multiplication() {
         // Define a 2x3 matrix
-        let m1 = matrix![
-            [1, 2, 3],
-            [4, 5, 6]
-        ];
+        let m1 = matrix![[1, 2, 3], [4, 5, 6]];
 
         // Define a 3x2 matrix
-        let m2 = matrix![
-            [7, 8],
-            [9, 10],
-            [11, 12]
-        ];
+        let m2 = matrix![[7, 8], [9, 10], [11, 12]];
 
         // Expected 2x2 product matrix
-        let product = matrix![
-            [58, 64],
-            [139, 154]
-        ];
+        let product = matrix![[58, 64], [139, 154]];
 
         assert_eq!(m1.dot(&m2), product);
     }

@@ -54,27 +54,21 @@ fn bench_matrix_multiplication(c: &mut Criterion) {
     let m1 = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape1);
     let m2 = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape2);
 
-    c.bench_function("matrix_multiplication", |b| {
-        b.iter(|| m1.dot(&m2))
-    });
+    c.bench_function("matrix_multiplication", |b| b.iter(|| m1.dot(&m2)));
 }
 
 fn bench_matrix_transpose(c: &mut Criterion) {
     let shape = [1000, 1000];
     let m = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape);
 
-    c.bench_function("matrix_transpose", |b| {
-        b.iter(|| m.transpose())
-    });
+    c.bench_function("matrix_transpose", |b| b.iter(|| m.transpose()));
 }
 
 fn bench_matrix_trace(c: &mut Criterion) {
     let shape = [1000, 1000];
     let m = Dimensional::<f64, LinearArrayStorage<f64, 2>, 2>::ones(shape);
 
-    c.bench_function("matrix_trace", |b| {
-        b.iter(|| m.trace())
-    });
+    c.bench_function("matrix_trace", |b| b.iter(|| m.trace()));
 }
 
 criterion_group!(
