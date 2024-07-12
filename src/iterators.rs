@@ -360,7 +360,7 @@ mod tests {
         let mut iter = array_3d.iter_mut();
         for i in 1..=12 {
             if let Some(elem) = iter.next() {
-                *elem = i as i32;
+                *elem = i;
             }
         }
 
