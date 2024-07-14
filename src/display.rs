@@ -83,7 +83,7 @@ where
                 let mut index_array = [0; N];
                 index_array[0] = i;
                 index_array[1] = j;
-                let index = Self::ravel_index(&index_array, &shape);
+                let index = self.ravel_index(&index_array);
                 // Check if a precision is specified in the formatter
                 if let Some(precision) = f.precision() {
                     write!(f, "{:.1$}", self.as_slice()[index], precision)?;
@@ -262,5 +262,15 @@ mod tests {
             format!("{}", array_5d),
             "5D array: shape [2, 2, 2, 2, 2], data [0, 1, 2, ..., 31]"
         );
+    }
+
+    #[test]
+    fn test_display_consistency() {
+        let array: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+            Dimensional::from_fn([3, 4], |[i, j]| (i * 4 + j) as i32);
+
+        let display_output = format!("{}", array);
+        let expected_output = "[\n [0, 1, 2, 3],\n [4, 5, 6, 7],\n [8, 9, 10, 11]\n]";
+        assert_eq!(display_output, expected_output, "Display output mismatch");
     }
 }
