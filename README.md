@@ -81,14 +81,14 @@ The `LinearArrayStorage` backend stores elements in a contiguous `Vec<T>` and su
 
 The following features and improvements are planned for future releases:
 
-- [ * ] Basic N-dimensional array
-- [ * ] Basic indexing
-- [ * ] Basic iterators
-- [ * ] Basic arithmetic operations
-- [ * ] Basic slicing
-- [ * ] Use safe rust in indexing
-- [ * ] Support common arithmetic operations
-- [ * ] Use safe rust in arithmetic operations
+- [x] Basic N-dimensional array
+- [x] Basic indexing
+- [x] Basic iterators
+- [x] Basic arithmetic operations
+- [x] Basic slicing
+- [x] Use safe rust in indexing
+- [x] Support common arithmetic operations
+- [x] Use safe rust in arithmetic operations
 - [ ] Move shape data to type-system for compile-time known dimensions
 - [ ] Matrix multiplication
 - [ ] Use safe Rust in iterators (currently uses unsafe code)
