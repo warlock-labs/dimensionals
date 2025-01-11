@@ -50,6 +50,7 @@ mod display;
 mod iterators;
 mod operators;
 mod storage;
+mod brownian;
 
 // Public API
 pub use crate::core::Dimensional;
