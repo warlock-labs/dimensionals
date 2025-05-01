@@ -67,6 +67,37 @@ pub mod csv {
     /// # Errors
     ///
     /// Returns an error if the file cannot be read or the data cannot be parsed
+    /// /// # Examples
+    ///
+    /// ```rust
+    /// use dimensionals::{matrix, Dimensional, LinearArrayStorage};
+    /// use dimensionals::io::csv::{from_csv, CsvReadOptions};
+    /// use std::fs::File;
+    /// use std::io::Write;
+    /// use tempfile::tempdir;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let dir = tempdir()?;
+    /// let file_path = dir.path().join("data.csv");
+    ///
+    /// // Create a sample CSV file
+    /// let mut file = File::create(&file_path)?;
+    /// writeln!(file, "1,2,3")?;
+    /// writeln!(file, "4,5,6")?;
+    /// file.flush()?;
+    ///
+    /// // Read the CSV file into a 2D Dimensional array
+    /// let options = CsvReadOptions {
+    ///     has_headers: false,
+    ///     delimiter: b',',
+    /// };
+    /// let array: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+    ///     from_csv(&file_path, Some(options))?;
+    ///
+    /// let expected = matrix![[1, 2, 3], [4, 5, 6]];
+    /// assert_eq!(array, expected);
+    /// # Ok(())
+    /// # }
     pub fn from_csv<T, S>(
         path: impl AsRef<Path>,
         options: Option<CsvReadOptions>,
@@ -131,6 +162,41 @@ pub mod csv {
     /// # Errors
     ///
     /// Returns an error if the file cannot be written
+    ///     /// Writes a 2D Dimensional array to a CSV file.
+    ///
+    /// # Arguments
+    ///
+    /// * `array` - The 2D Dimensional array to write
+    /// * `path` - The path to the CSV file
+    /// * `options` - Optional CSV writing options
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dimensionals::{matrix, Dimensional, LinearArrayStorage};
+    /// use dimensionals::io::csv::{to_csv, CsvWriteOptions};
+    /// use std::fs;
+    /// use tempfile::tempdir;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let dir = tempdir()?;
+    /// let file_path = dir.path().join("output.csv");
+    ///
+    /// let array: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> =
+    ///     matrix![[10, 20], [30, 40]];
+    ///
+    /// let options = CsvWriteOptions {
+    ///     write_headers: false,
+    ///     delimiter: b',',
+    /// };
+    ///
+    /// to_csv(&array, &file_path, Some(options))?;
+    ///
+    /// // Verify the content of the created CSV file
+    /// let content = fs::read_to_string(&file_path)?;
+    /// assert_eq!(content, "10,20\n30,40\n");
+    /// # Ok(())
+    /// # }
     pub fn to_csv<T, S>(
         array: &Dimensional<T, S, 2>,
         path: impl AsRef<Path>,
@@ -178,6 +244,36 @@ pub mod csv {
     /// # Errors
     ///
     /// Returns an error if the file cannot be read or the data cannot be parsed
+    /// /// # Examples
+    ///
+    /// ```rust
+    /// use dimensionals::{vector, Dimensional, LinearArrayStorage};
+    /// use dimensionals::io::csv::{from_csv_1d, CsvReadOptions};
+    /// use std::fs::File;
+    /// use std::io::Write;
+    /// use tempfile::tempdir;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let dir = tempdir()?;
+    /// let file_path = dir.path().join("data_1d.csv");
+    ///
+    /// // Create a sample CSV file (single row)
+    /// let mut file = File::create(&file_path)?;
+    /// writeln!(file, "1.1,2.2,3.3")?;
+    /// file.flush()?;
+    ///
+    /// // Read the CSV file into a 1D Dimensional array
+    /// let options = CsvReadOptions {
+    ///     has_headers: false,
+    ///     delimiter: b',',
+    /// };
+    /// let array: Dimensional<f64, LinearArrayStorage<f64, 1>, 1> =
+    ///     from_csv_1d(&file_path, Some(options))?;
+    ///
+    /// let expected = vector![1.1, 2.2, 3.3];
+    /// assert_eq!(array, expected);
+    /// # Ok(())
+    /// # }
     pub fn from_csv_1d<T, S>(
         path: impl AsRef<Path>,
         options: Option<CsvReadOptions>,
@@ -221,6 +317,37 @@ pub mod csv {
     /// # Errors
     ///
     /// Returns an error if the file cannot be written
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dimensionals::{vector, Dimensional, LinearArrayStorage};
+    /// use dimensionals::io::csv::{to_csv_1d, CsvWriteOptions};
+    /// use std::fs;
+    /// use tempfile::tempdir;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let dir = tempdir()?;
+    /// let file_path = dir.path().join("output_1d.csv");
+    ///
+    /// let array: Dimensional<f64, LinearArrayStorage<f64, 1>, 1> =
+    ///     vector![10.5, 20.1, 30.9];
+    ///
+    /// let options = CsvWriteOptions {
+    ///     write_headers: false,
+    ///     delimiter: b',',
+    /// };
+    ///
+    /// to_csv_1d(&array, &file_path, Some(options))?;
+    ///
+    /// // Verify the content of the created CSV file
+    /// let content = fs::read_to_string(&file_path)?;
+    /// assert_eq!(content, "10.5,20.1,30.9\n");
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
     pub fn to_csv_1d<T, S>(
         array: &Dimensional<T, S, 1>,
         path: impl AsRef<Path>,

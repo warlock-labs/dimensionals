@@ -29,3 +29,6 @@ harness = false
 
 [features]
 io = ["csv"]
+
+[package.metadata.docs.rs]
+all-features = true
