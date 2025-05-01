@@ -247,7 +247,6 @@ pub mod csv {
     }
 }
 
-// Move test code to a separate module or file
 #[cfg(test)]
 mod tests {
     use crate::{matrix, vector, Dimensional, LinearArrayStorage};
@@ -262,16 +261,12 @@ mod tests {
         let dir = tempdir()?;
         let file_path = dir.path().join("test_2d.csv");
 
-        // Create a 2D array
         let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![[1, 2, 3], [4, 5, 6]];
 
-        // Write to CSV
         csv::to_csv(&m, &file_path, None)?;
 
-        // Read from CSV
         let m2 = csv::from_csv::<i32, LinearArrayStorage<i32, 2>>(&file_path, None)?;
 
-        // Verify contents
         assert_eq!(m, m2);
 
         Ok(())
@@ -285,16 +280,12 @@ mod tests {
         let dir = tempdir()?;
         let file_path = dir.path().join("test_1d.csv");
 
-        // Create a 1D array
         let v: Dimensional<f64, LinearArrayStorage<f64, 1>, 1> = vector![1.1, 2.2, 3.3, 4.4, 5.5];
 
-        // Write to CSV
         csv::to_csv_1d(&v, &file_path, None)?;
 
-        // Read from CSV
         let v2 = csv::from_csv_1d::<f64, LinearArrayStorage<f64, 1>>(&file_path, None)?;
 
-        // Verify contents
         assert_eq!(v, v2);
 
         Ok(())
@@ -308,10 +299,8 @@ mod tests {
         let dir = tempdir()?;
         let file_path = dir.path().join("test_options.csv");
 
-        // Create a 2D array
         let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = matrix![[1, 2, 3], [4, 5, 6]];
 
-        // Write to CSV with semicolon delimiter
         let write_options = CsvWriteOptions {
             delimiter: b';',
             write_headers: false,
@@ -319,11 +308,9 @@ mod tests {
 
         csv::to_csv(&m, &file_path, Some(write_options))?;
 
-        // Verify the file contains semicolons
         let content = fs::read_to_string(&file_path)?;
         assert!(content.contains(';'));
 
-        // Read from CSV with matching options
         let read_options = CsvReadOptions {
             delimiter: b';',
             has_headers: false,
@@ -331,8 +318,124 @@ mod tests {
 
         let m2 = csv::from_csv::<i32, LinearArrayStorage<i32, 2>>(&file_path, Some(read_options))?;
 
-        // Verify contents
         assert_eq!(m, m2);
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "csv")]
+    fn test_csv_inconsistent_columns() -> Result<(), Box<dyn std::error::Error>> {
+        use crate::io::csv;
+        use std::io::Write;
+
+        let dir = tempdir()?;
+        let file_path = dir.path().join("inconsistent.csv");
+
+        let mut file = fs::File::create(&file_path)?;
+        writeln!(file, "1,2,3")?;
+        writeln!(file, "4,5")?; // Inconsistent row
+        writeln!(file, "6,7,8")?;
+        file.flush()?;
+
+        let result = csv::from_csv::<i32, LinearArrayStorage<i32, 2>>(&file_path, None);
+
+        assert!(result.is_err());
+        let error_message = result.unwrap_err().to_string();
+        assert!(
+            error_message.contains("inconsistent number of columns") ||
+             error_message.contains("length") || // Broader check for CSV crate errors
+             error_message.contains("record") // Another common term in CSV errors
+        );
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "csv")]
+    fn test_csv_empty_file() -> Result<(), Box<dyn std::error::Error>> {
+        use crate::io::csv;
+
+        let dir = tempdir()?;
+        let file_path = dir.path().join("empty.csv");
+
+        fs::File::create(&file_path)?;
+
+        let result_2d = csv::from_csv::<i32, LinearArrayStorage<i32, 2>>(&file_path, None);
+        assert!(result_2d.is_err());
+        assert!(result_2d
+            .unwrap_err()
+            .to_string()
+            .contains("CSV file is empty or contains no data rows"));
+
+        let result_1d = csv::from_csv_1d::<i32, LinearArrayStorage<i32, 1>>(&file_path, None)?;
+        assert!(result_1d.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "csv")]
+    fn test_csv_only_headers() -> Result<(), Box<dyn std::error::Error>> {
+        use crate::io::csv::{self, CsvReadOptions};
+        use std::io::Write;
+
+        let dir = tempdir()?;
+        let file_path = dir.path().join("only_headers.csv");
+
+        let mut file = fs::File::create(&file_path)?;
+        writeln!(file, "col1,col2,col3")?;
+        file.flush()?;
+
+        let options = CsvReadOptions {
+            has_headers: true,
+            ..Default::default()
+        };
+
+        let result = csv::from_csv::<i32, LinearArrayStorage<i32, 2>>(&file_path, Some(options));
+
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("CSV file is empty or contains no data rows"));
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "csv")]
+    fn test_csv_write_empty_2d() -> Result<(), Box<dyn std::error::Error>> {
+        use crate::io::csv;
+
+        let dir = tempdir()?;
+        let file_path = dir.path().join("empty_write_2d.csv");
+
+        let m: Dimensional<i32, LinearArrayStorage<i32, 2>, 2> = Dimensional::zeros([0, 3]);
+
+        csv::to_csv(&m, &file_path, None)?;
+
+        let content = fs::read_to_string(&file_path)?;
+
+        assert!(content.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "csv")]
+    fn test_csv_write_empty_1d() -> Result<(), Box<dyn std::error::Error>> {
+        use crate::io::csv;
+
+        let dir = tempdir()?;
+        let file_path = dir.path().join("empty_write_1d.csv");
+
+        let v: Dimensional<f64, LinearArrayStorage<f64, 1>, 1> = Dimensional::zeros([0]);
+
+        csv::to_csv_1d(&v, &file_path, None)?;
+
+        let content = fs::read_to_string(&file_path)?;
+
+        assert_eq!(content, "\"\"\n");
 
         Ok(())
     }
