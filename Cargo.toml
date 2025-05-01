@@ -15,12 +15,20 @@ edition = "2021"
 
 [dependencies]
 num-traits = "0.2.19"
+csv = { version = "1.2", optional = true }
 
 [lib]
 
 [dev-dependencies]
 criterion = "0.5.1"
+tempfile = "3.6.0"
 
 [[bench]]
 name = "benchmarks"
 harness = false
+
+[features]
+io = ["csv"]
+
+[package.metadata.docs.rs]
+all-features = true
