@@ -51,6 +51,9 @@ mod iterators;
 mod operators;
 mod storage;
 
+#[cfg(feature = "io")]
+pub mod io;
+
 // Public API
 pub use crate::core::Dimensional;
 pub use iterators::*;
